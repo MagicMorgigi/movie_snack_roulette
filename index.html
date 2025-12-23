@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v21</title>
+    <title>Movie & Snack Roulette v22</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -113,9 +113,14 @@
         .snack-item:last-child { border-bottom: none; }
         .snack-info { display: flex; align-items: center; gap: 10px; }
         
+        /* UPDATE: Angepasste Reihenfolge und Größen */
         .add-snack-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
-        /* Alle Inputs gleich groß machen */
-        .add-snack-form input, .add-snack-form select { flex: 1 1 20%; padding: 8px; font-size: 0.9rem; min-width: 80px; }
+        /* Name und Desc bekommen mehr Platz, Typ und Emoji weniger */
+        .add-snack-form input[type="text"]:nth-child(1) { flex: 2 1 120px; } /* Name */
+        .add-snack-form select { flex: 1 1 90px; } /* Typ */
+        .add-snack-form input[type="text"]:nth-child(3) { flex: 1 1 80px; } /* Emoji */
+        .add-snack-form input[type="text"]:nth-child(4) { flex: 2 1 120px; } /* Desc */
+        
         .btn-small-add { background: #333; color: white; border: 1px solid #555; padding: 0 15px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 0 0 40px; }
         .btn-small-add:hover { background: var(--primary); border-color: var(--primary); }
 
@@ -251,12 +256,16 @@
                         <label style="color:var(--primary); margin-bottom:10px;">Neuen Snack hinzufügen</label>
                         <div class="add-snack-form">
                             <input type="text" id="newSnackName" placeholder="Name">
-                            <input type="text" id="newSnackEmoji" placeholder="Emoji">
+                            
                             <select id="newSnackType">
                                 <option value="salty">Salzig</option>
                                 <option value="sweet">Süß</option>
                             </select>
+
+                            <input type="text" id="newSnackEmoji" placeholder="Emoji (opt.)">
+                            
                             <input type="text" id="newSnackDesc" placeholder="Beschreibung (opt.)">
+                            
                             <button class="btn-small-add" onclick="addCustomSnack()">+</button>
                         </div>
                         <div id="snackListDisplay" class="snack-list"></div>
@@ -313,7 +322,7 @@
     const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: HIER API KEY EINFÜGEN!
 
     const GIF_DURATION = 5000;         
-    const PAUSE_DARK_SCREEN = 0;     
+    const PAUSE_DARK_SCREEN = 500;     
 
     const introGifs = [];
     for (let i = 1; i <= 28; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
@@ -372,9 +381,9 @@
     }
     function addCustomSnack() {
         const name = document.getElementById('newSnackName').value;
-        const emoji = document.getElementById('newSnackEmoji').value || '🤤';
         const type = document.getElementById('newSnackType').value;
-        const desc = document.getElementById('newSnackDesc').value; // Optional
+        const emoji = document.getElementById('newSnackEmoji').value || '🤤';
+        const desc = document.getElementById('newSnackDesc').value; 
 
         if (!name) return alert("Name fehlt!");
         
@@ -431,7 +440,7 @@
                         setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
                     }, 2800);
                 }, 500);
-            }, 500 + PAUSE_DARK_SCREEN);
+            }, 2000 + PAUSE_DARK_SCREEN);
         }, GIF_DURATION);
     }
 
@@ -449,96 +458,4 @@
     function populateYearPicker() { const s = document.getElementById('minYearSelect'); const cY = new Date().getFullYear(); for(let i=cY; i>=1900; i--) { const o = document.createElement('option'); o.value = i; o.innerText = i; s.appendChild(o); } }
     
     async function loadCountries() { 
-        try { const r=await fetch(`https://api.themoviedb.org/3/configuration/countries?api_key=${API_KEY}&language=de`); const d=await r.json(); d.sort((a,b)=>a.native_name.localeCompare(b.native_name)); 
-        const s=document.getElementById('countrySelect'); const f=(cc)=>cc.toUpperCase().replace(/./g, c=>String.fromCodePoint(c.charCodeAt(0)+127397)); 
-        d.forEach(c=>{ const o=document.createElement('option'); o.value=c.iso_3166_1; o.setAttribute('data-name',c.native_name); o.innerText=`${f(c.iso_3166_1)} ${c.native_name}`; if(c.iso_3166_1==='DE')o.selected=true; s.appendChild(o); }); 
-        } catch(e){} 
-    }
-    
-    async function loadGenres(typeOverride) {
-        const type = typeOverride || selectedMediaTypes[0] || 'movie'; 
-        const c=document.getElementById('genreBox'); c.innerHTML='Lade...'; state.selectedGenres=[]; 
-        try{ 
-            if(!state.genres[type] || state.genres[type].length===0){ 
-                const r=await fetch(`https://api.themoviedb.org/3/genre/${type}/list?api_key=${API_KEY}&language=de`); 
-                const d=await r.json(); 
-                state.genres[type]=d.genres.sort((a, b) => a.name.localeCompare(b.name)); 
-            } 
-            c.innerHTML=''; 
-            state.genres[type].forEach(g=>{ const ch=document.createElement('div'); ch.className='chip'; ch.innerText=g.name; ch.onclick=()=>{ ch.classList.toggle('active'); if(state.selectedGenres.includes(g.id)) state.selectedGenres=state.selectedGenres.filter(id=>id!==g.id); else state.selectedGenres.push(g.id); }; c.appendChild(ch); }); 
-        }catch(e){} 
-    }
-
-    async function startGeneration() {
-        const btn = document.getElementById('genBtn'); btn.disabled=true; btn.innerText="⏳ Suche läuft...";
-        const mode = document.getElementById('appMode').value;
-        try { if(mode !== 'snack') await generateMedia(); if(mode !== 'media') generateSnack(); } catch(e){console.error(e);alert("Fehler!");} 
-        btn.disabled=false; btn.innerText="🎲 Vorschlag generieren 🎲";
-    }
-
-    async function generateMedia() {
-        if(selectedMediaTypes.length === 0) { alert("Bitte wähle Film oder Serie aus!"); return; }
-        const type = selectedMediaTypes[Math.floor(Math.random() * selectedMediaTypes.length)];
-        const mr=document.getElementById('minRating').value; const mv=document.getElementById('minVotes').value; const mrt=document.getElementById('maxRuntime').value; const my=document.getElementById('minYearSelect').value; const cc=document.getElementById('countrySelect').value; const cn=document.getElementById('countrySelect').options[document.getElementById('countrySelect').selectedIndex].getAttribute('data-name');
-        
-        let u=`https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&language=de-DE&sort_by=popularity.desc&vote_average.gte=${mr}&vote_count.gte=${mv}&watch_region=${cc}`;
-        if(state.selectedGenres.length>0) u+=`&with_genres=${state.selectedGenres.join(',')}`; if(mrt<240) u+=`&with_runtime.lte=${mrt}`; 
-        if(my) { const d=type==='movie'?'primary_release_date.gte':'first_air_date.gte'; u+=`&${d}=${my}-01-01`; }
-        
-        const cr=await fetch(u); const cd=await cr.json(); if(!cd.results||cd.total_results===0){alert("Nichts gefunden!");return;}
-        const mp=Math.min(cd.total_pages,50); const rp=Math.floor(Math.random()*mp)+1; const fr=await fetch(`${u}&page=${rp}`); const fd=await fr.json(); const i=fd.results[Math.floor(Math.random()*fd.results.length)];
-        await fetchDetails(i,type,cc,cn);
-    }
-
-    async function fetchDetails(i,t,cc,cn) {
-        const l=document.getElementById('trailerLang').value; 
-        let vr=await fetch(`https://api.themoviedb.org/3/${t}/${i.id}/videos?api_key=${API_KEY}&language=${l}`); let vd=await vr.json(); let tr=vd.results.find(v=>v.site==='YouTube'&&v.type==='Trailer');
-        if(!tr&&l==='de'){ vr=await fetch(`https://api.themoviedb.org/3/${t}/${i.id}/videos?api_key=${API_KEY}&language=en-US`); vd=await vr.json(); tr=vd.results.find(v=>v.site==='YouTube'&&v.type==='Trailer'); }
-        const pr=await fetch(`https://api.themoviedb.org/3/${t}/${i.id}/watch/providers?api_key=${API_KEY}`); const pd=await pr.json(); const lp=pd.results[cc]||{};
-        const fo={ title:i.title||i.name, desc:i.overview||"Keine Info.", rating:i.vote_average.toFixed(1), votes:i.vote_count, year:(i.release_date||i.first_air_date||"").substring(0,4), poster:i.poster_path?`https://image.tmdb.org/t/p/w300${i.poster_path}`:null, trailerId:tr?tr.key:null, providers:lp, countryName:cn };
-        if(state.media.index<state.media.history.length-1) state.media.history=state.media.history.slice(0,state.media.index+1); state.media.history.push(fo); state.media.index++; renderMedia(fo);
-    }
-
-    function renderMedia(i) {
-        document.getElementById('mediaCard').style.display='flex'; document.getElementById('mTitle').innerText=i.title; document.getElementById('mRating').innerText=i.rating; document.getElementById('mVotes').innerText=`(${i.votes})`; document.getElementById('mYear').innerText=i.year; document.getElementById('mDesc').innerText=i.desc;
-        const pi=document.getElementById('mPoster'); if(i.poster){pi.src=i.poster;pi.style.display='block';}else{pi.style.display='none';}
-        const pc=document.getElementById('mProvidersContent'); pc.innerHTML=''; document.getElementById('providerHeader').innerText=`Verfügbar in ${i.countryName} als...`;
-        let hp=false; [{k:'flatrate',l:'Flatrate:'},{k:'rent',l:'Leihe:'},{k:'buy',l:'Kauf:'}].forEach(t=>{ if(i.providers[t.k]){ hp=true; const r=document.createElement('div'); r.className='prov-cat'; const lb=document.createElement('span'); lb.className='prov-label'; lb.innerText=t.l; r.appendChild(lb); const lst=document.createElement('div'); list=document.createElement('div'); lst.className='provider-list'; i.providers[t.k].forEach(p=>{ const im=document.createElement('img'); im.src=`https://image.tmdb.org/t/p/w92${p.logo_path}`; im.className='provider-icon'; lst.appendChild(im); }); r.appendChild(lst); pc.appendChild(r); } });
-        if(!hp) pc.innerHTML='<div style="font-size:0.8rem;color:#777;">Keine Infos.</div>';
-        const vc=document.getElementById('mVideo'); vc.innerHTML=i.trailerId?`<iframe src="https://www.youtube.com/embed/${i.trailerId}?rel=0" frameborder="0" allowfullscreen></iframe>`:`<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#555;">Kein Trailer</div>`;
-        updateNavState('media');
-    }
-
-    function generateSnack() {
-        const activeChips = document.querySelectorAll('#snackChipContainer .chip.active');
-        const activeTypes = Array.from(activeChips).map(c => c.dataset.type);
-        if(activeTypes.length === 0) { alert("Bitte wähle mindestens Süß oder Salzig!"); return; }
-        let pool = snackDB.filter(s => activeTypes.includes(s.type));
-        if (pool.length === 0) { alert("Keine Snacks in dieser Kategorie gefunden!"); return; }
-        const item = pool[Math.floor(Math.random() * pool.length)];
-        if(state.snack.index < state.snack.history.length - 1) state.snack.history = state.snack.history.slice(0, state.snack.index + 1); 
-        state.snack.history.push(item); state.snack.index++; renderSnack(item);
-    }
-
-    function renderSnack(i) {
-        document.getElementById('snackCard').style.display='flex'; 
-        const m=document.getElementById('appMode').value; const h=document.getElementById('snackDynamicHeader');
-        if(m==='both'){ h.innerText="Wie wär's dazu mit..."; h.style.color='#ccc'; h.style.fontSize='1.2rem'; } else { h.innerText="Snack-Time! 🤤🥳"; h.style.color='var(--primary)'; h.style.fontSize='1.8rem'; h.style.fontWeight='bold'; }
-        document.getElementById('sName').innerText=i.name; document.getElementById('sEmoji').innerText=i.icon; 
-        
-        const dEl = document.getElementById('sDesc');
-        if(i.desc) {
-            dEl.innerText=i.desc;
-            dEl.style.display = 'block';
-        } else {
-            dEl.style.display = 'none';
-        }
-        
-        updateNavState('snack');
-    }
-
-    function navigate(t,d) { const s=state[t]; const n=s.index+d; if(d===1&&n>=s.history.length){ if(t==='media') startGeneration(); else generateSnack(); } else if(n>=0){ s.index=n; if(t==='media') renderMedia(s.history[n]); else renderSnack(s.history[n]); } }
-    function updateNavState(t) { document.getElementById(t==='media'?'btnMPrev':'btnSPrev').disabled=state[t].index<=0; }
-</script>
-</body>
-</html>
+        try { const r=await fetch(`https://api.the
