@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v19</title>
+    <title>Movie & Snack Roulette v20</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -217,13 +217,13 @@
                     <input type="range" id="minRating" min="0" max="10.0" step="0.1" value="7.0" oninput="document.getElementById('ratingVal').innerText = parseFloat(this.value).toFixed(1)">
                 </div>
 
-                <button class="toggle-btn" onclick="toggleMovieFilters()">⚙️ Erweiterte Film-Filter (Genre, Jahr...)</button>
+                <button class="toggle-btn" onclick="toggleMovieFilters()">⚙️ Erweiterte Filter (Genre, Erscheinungsjahr, Länge...)</button>
                 
                 <div id="movieFiltersSection" class="hidden-section">
                     <div class="row"><div class="full-width"><label>Genre (Mehrfachauswahl möglich)</label><div id="genreBox" class="chip-container">Lade...</div></div></div>
-                    <div class="row"><div class="full-width"><label>Frühestes Jahr</label><select id="minYearSelect"><option value="">Beliebig</option></select></div></div>
-                    <div class="slider-row"><label>Max. Laufzeit: <span id="runtimeVal" class="val-display">Alle</span></label><input type="range" id="maxRuntime" min="30" max="240" step="5" value="240" oninput="updateRuntimeDisplay(this.value)"></div>
-                    <div class="slider-row"><label>Min. Votes: <span id="voteCountVal" class="val-display">200</span></label><input type="range" id="minVotes" min="20" max="500" step="10" value="200" oninput="document.getElementById('voteCountVal').innerText = this.value"></div>
+                    <div class="row"><div class="full-width"><label>Frühestes Erscheinungsjahr</label><select id="minYearSelect"><option value="">Beliebig</option></select></div></div>
+                    <div class="slider-row"><label>Max. Film-/Episodenlänge [Min.]: <span id="runtimeVal" class="val-display">Alle</span></label><input type="range" id="maxRuntime" min="30" max="240" step="5" value="240" oninput="updateRuntimeDisplay(this.value)"></div>
+                    <div class="slider-row"><label>Min. Anzahl von Bewertungen: <span id="voteCountVal" class="val-display">200</span></label><input type="range" id="minVotes" min="20" max="500" step="10" value="200" oninput="document.getElementById('voteCountVal').innerText = this.value"></div>
                 </div>
             </div>
 
@@ -302,9 +302,9 @@
 </div>
 
 <script>
-    const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; 
+    const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: HIER API KEY EINFÜGEN!
 
-    const GIF_DURATION = 5000;         
+    const GIF_DURATION = 4000;         
     const PAUSE_DARK_SCREEN = 0;     
 
     const introGifs = [];
@@ -324,7 +324,7 @@
     ];
 
     let snackDB = [];
-    let selectedMediaTypes = ['movie']; // Default nur Film
+    let selectedMediaTypes = ['movie']; 
 
     const state = { media: { history: [], index: -1 }, snack: { history: [], index: -1 }, genres: { movie: [], tv: [] }, selectedGenres: [] };
     let introDone = false;
@@ -339,27 +339,18 @@
         updateUI();
     };
 
-    // --- NEUE FILTER LOGIKEN ---
+    // --- FILTER & UI LOGIK ---
     function toggleMovieFilters() { document.getElementById('movieFiltersSection').classList.toggle('show'); }
     function toggleSnackEditor() { document.getElementById('snackEditorSection').classList.toggle('show'); }
 
-    // Media Type Logic (Multi Select)
     function toggleMediaType(type, el) {
         el.classList.toggle('active');
-        if(selectedMediaTypes.includes(type)) {
-            selectedMediaTypes = selectedMediaTypes.filter(t => t !== type);
-        } else {
-            selectedMediaTypes.push(type);
-        }
-        // Genre neu laden basierend auf der Auswahl? 
-        // Einfachheitshalber laden wir Genres für den zuletzt geklickten Typ oder Movie als Fallback
+        if(selectedMediaTypes.includes(type)) { selectedMediaTypes = selectedMediaTypes.filter(t => t !== type); } 
+        else { selectedMediaTypes.push(type); }
         if(type) loadGenres(type); 
     }
 
-    // Snack Type Logic (Multi Select)
-    function toggleSnackType(el) {
-        el.classList.toggle('active');
-    }
+    function toggleSnackType(el) { el.classList.toggle('active'); }
 
     // --- DB LOGIC ---
     function loadSnacksFromStorage() {
@@ -376,16 +367,13 @@
         const emoji = document.getElementById('newSnackEmoji').value || '😋';
         const type = document.getElementById('newSnackType').value;
         if (!name) return alert("Name fehlt!");
-        snackDB.push({ name: name, type: type, icon: emoji, desc: "Eigener Snack" });
+        // Keine Description für Custom Snacks, damit sie im UI ausgeblendet wird
+        snackDB.push({ name: name, type: type, icon: emoji }); 
         saveSnacksToStorage();
         document.getElementById('newSnackName').value = '';
     }
-    function deleteSnack(index) {
-        if (confirm("Löschen?")) { snackDB.splice(index, 1); saveSnacksToStorage(); }
-    }
-    function resetSnacks() {
-        if (confirm("Reset?")) { localStorage.removeItem('mySnacks'); loadSnacksFromStorage(); }
-    }
+    function deleteSnack(index) { if (confirm("Löschen?")) { snackDB.splice(index, 1); saveSnacksToStorage(); } }
+    function resetSnacks() { if (confirm("Reset?")) { localStorage.removeItem('mySnacks'); loadSnacksFromStorage(); } }
     function renderSnackEditorList() {
         const list = document.getElementById('snackListDisplay'); list.innerHTML = '';
         snackDB.forEach((item, index) => {
@@ -395,7 +383,7 @@
         });
     }
 
-    // --- INTRO & CORE ---
+    // --- INTRO ---
     function forceStartApp() {
         if(introDone) return;
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -429,17 +417,13 @@
                         setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
                     }, 2800);
                 }, 500);
-            }, 2000 + PAUSE_DARK_SCREEN);
+            }, 1500 + PAUSE_DARK_SCREEN);
         }, GIF_DURATION);
-    }
-
-    function selectSnackPref(val, el) { 
-        // Legacy Support falls gebraucht, aber neue Logik nutzt toggleSnackType
     }
 
     function updateUI() {
         const mode = document.getElementById('appMode').value;
-        const mP = [document.getElementById('mandatoryFilters')]; // Optional ist jetzt im Mandatory Block versteckt
+        const mP = [document.getElementById('mandatoryFilters')]; 
         const sP = document.getElementById('snackFilters');
         const mC = document.getElementById('mediaCard'); 
         const sC = document.getElementById('snackCard');
@@ -458,13 +442,14 @@
     }
     
     async function loadGenres(typeOverride) {
-        // Nutze den ersten ausgewählten Typ für die Genres, oder 'movie' als default
         const type = typeOverride || selectedMediaTypes[0] || 'movie'; 
         const c=document.getElementById('genreBox'); c.innerHTML='Lade...'; state.selectedGenres=[]; 
         try{ 
             if(!state.genres[type] || state.genres[type].length===0){ 
                 const r=await fetch(`https://api.themoviedb.org/3/genre/${type}/list?api_key=${API_KEY}&language=de`); 
-                const d=await r.json(); state.genres[type]=d.genres; 
+                const d=await r.json(); 
+                // HIER: Sortierung A-Z
+                state.genres[type]=d.genres.sort((a, b) => a.name.localeCompare(b.name)); 
             } 
             c.innerHTML=''; 
             state.genres[type].forEach(g=>{ const ch=document.createElement('div'); ch.className='chip'; ch.innerText=g.name; ch.onclick=()=>{ ch.classList.toggle('active'); if(state.selectedGenres.includes(g.id)) state.selectedGenres=state.selectedGenres.filter(id=>id!==g.id); else state.selectedGenres.push(g.id); }; c.appendChild(ch); }); 
@@ -479,12 +464,8 @@
     }
 
     async function generateMedia() {
-        // Prüfen ob mind. 1 Typ gewählt ist
         if(selectedMediaTypes.length === 0) { alert("Bitte wähle Film oder Serie aus!"); return; }
-        
-        // Zufälligen Typ auswählen aus den aktiven
         const type = selectedMediaTypes[Math.floor(Math.random() * selectedMediaTypes.length)];
-        
         const mr=document.getElementById('minRating').value; const mv=document.getElementById('minVotes').value; const mrt=document.getElementById('maxRuntime').value; const my=document.getElementById('minYearSelect').value; const cc=document.getElementById('countrySelect').value; const cn=document.getElementById('countrySelect').options[document.getElementById('countrySelect').selectedIndex].getAttribute('data-name');
         
         let u=`https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&language=de-DE&sort_by=popularity.desc&vote_average.gte=${mr}&vote_count.gte=${mv}&watch_region=${cc}`;
@@ -516,26 +497,32 @@
     }
 
     function generateSnack() {
-        // Aktive Chips auslesen
         const activeChips = document.querySelectorAll('#snackChipContainer .chip.active');
         const activeTypes = Array.from(activeChips).map(c => c.dataset.type);
-
         if(activeTypes.length === 0) { alert("Bitte wähle mindestens Süß oder Salzig!"); return; }
-
         let pool = snackDB.filter(s => activeTypes.includes(s.type));
-        
         if (pool.length === 0) { alert("Keine Snacks in dieser Kategorie gefunden!"); return; }
-
         const item = pool[Math.floor(Math.random() * pool.length)];
         if(state.snack.index < state.snack.history.length - 1) state.snack.history = state.snack.history.slice(0, state.snack.index + 1); 
-        state.snack.history.push(item); state.snack.index++; 
-        renderSnack(item);
+        state.snack.history.push(item); state.snack.index++; renderSnack(item);
     }
 
     function renderSnack(i) {
-        document.getElementById('snackCard').style.display='flex'; const m=document.getElementById('appMode').value; const h=document.getElementById('snackDynamicHeader');
+        document.getElementById('snackCard').style.display='flex'; 
+        const m=document.getElementById('appMode').value; const h=document.getElementById('snackDynamicHeader');
         if(m==='both'){ h.innerText="Wie wär's dazu mit..."; h.style.color='#ccc'; h.style.fontSize='1.2rem'; } else { h.innerText="Snack-Time! 🤤🥳"; h.style.color='var(--primary)'; h.style.fontSize='1.8rem'; h.style.fontWeight='bold'; }
-        document.getElementById('sName').innerText=i.name; document.getElementById('sEmoji').innerText=i.icon; document.getElementById('sDesc').innerText=i.desc; updateNavState('snack');
+        document.getElementById('sName').innerText=i.name; document.getElementById('sEmoji').innerText=i.icon; 
+        
+        // HIER: Beschreibung optional machen
+        const dEl = document.getElementById('sDesc');
+        if(i.desc) {
+            dEl.innerText=i.desc;
+            dEl.style.display = 'block';
+        } else {
+            dEl.style.display = 'none';
+        }
+        
+        updateNavState('snack');
     }
 
     function navigate(t,d) { const s=state[t]; const n=s.index+d; if(d===1&&n>=s.history.length){ if(t==='media') startGeneration(); else generateSnack(); } else if(n>=0){ s.index=n; if(t==='media') renderMedia(s.history[n]); else renderSnack(s.history[n]); } }
