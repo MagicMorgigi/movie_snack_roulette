@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v18</title>
+    <title>Movie & Snack Roulette v19</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -24,7 +24,6 @@
             transition: opacity 2s ease-in-out, visibility 2s;
         }
         #loadingOverlay.hidden { opacity: 0; visibility: hidden; }
-        
         .loading-gif { max-width: 80%; max-height: 50vh; border-radius: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.8); opacity: 0; transition: opacity 0.5s; }
         .loading-gif.loaded { opacity: 1; }
 
@@ -92,10 +91,10 @@
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #444; border-radius: 5px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--primary); margin-top: -8px; border: 2px solid #fff; }
         
-        .toggle-btn { background: transparent; border: 1px solid #555; color: #aaa; padding: 12px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 0.95rem; margin-bottom: 25px; transition: 0.2s; text-align: center; }
+        .toggle-btn { background: transparent; border: 1px solid #555; color: #aaa; padding: 10px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 0.85rem; margin-top: 10px; transition: 0.2s; text-align: center; }
         .toggle-btn:hover { background: #333; color: white; border-color: #888; }
         
-        .btn-gen { background: linear-gradient(135deg, #e50914, #b20710); color: white; border: none; padding: 18px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4); margin-top: 15px; transition: transform 0.2s; }
+        .btn-gen { background: linear-gradient(135deg, #e50914, #b20710); color: white; border: none; padding: 18px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4); margin-top: 25px; transition: transform 0.2s; }
         .btn-gen:active { transform: scale(0.98); }
         .btn-gen:disabled { opacity: 0.5; cursor: wait; }
 
@@ -105,7 +104,7 @@
         .chip:hover { background: #444; }
         .chip.active { background: var(--primary); color: white; border-color: #ff4f58; font-weight: bold; }
         
-        .hidden-section { display: none; padding-top: 15px; border-top: 1px solid #444; animation: fadeIn 0.3s; }
+        .hidden-section { display: none; padding-top: 15px; border-top: 1px solid #444; animation: fadeIn 0.3s; margin-top: 15px; }
         .hidden-section.show { display: block; }
 
         /* --- SNACK EDITOR STYLES --- */
@@ -168,7 +167,6 @@
 </div>
 
 <div class="wrapper">
-    
     <div id="mainMarquee" class="marquee-wrapper in-center">
         <div id="cinemaSign" class="cinema-sign">
             <h1>Movie & Snack<br>Roulette</h1>
@@ -189,49 +187,18 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="full-width">
-                    <button class="toggle-btn" onclick="toggleSettings()">⚙️ Einstellungen & Snack-Datenbank</button>
-                    <div id="settingsSection" class="hidden-section">
-                        <div style="background:#222; padding:15px; border-radius:8px; margin-bottom:20px;">
-                            <label style="color:var(--primary); margin-bottom:10px;">🍿 Meine Snacks bearbeiten</label>
-                            
-                            <div class="add-snack-form">
-                                <input type="text" id="newSnackName" placeholder="Name (z.B. Erdnüsse)">
-                                <input type="text" id="newSnackEmoji" placeholder="Emoji (🥜)" style="flex:0 0 80px;">
-                                <select id="newSnackType" style="flex:0 0 100px;">
-                                    <option value="salty">Salzig</option>
-                                    <option value="sweet">Süß</option>
-                                </select>
-                                <button class="btn-small" onclick="addCustomSnack()">+</button>
-                            </div>
-
-                            <div id="snackListDisplay" class="snack-list">
-                                </div>
-                            
-                            <button class="btn-small" onclick="resetSnacks()" style="width:100%; border-color:#555; color:#aaa; font-size:0.8rem;">🔄 Auf Standard zurücksetzen</button>
-                        </div>
-
-                        <div id="optionalFiltersContainer">
-                            <label style="color:var(--primary); margin-top:20px; margin-bottom:10px;">🎬 Erweiterte Film-Filter</label>
-                            <div class="row"><div class="full-width"><label>Genre</label><div id="genreBox" class="chip-container">Lade...</div></div></div>
-                            <div class="row"><div class="full-width"><label>Frühestes Jahr</label><select id="minYearSelect"><option value="">Beliebig</option></select></div></div>
-                            <div class="slider-row"><label>Max. Laufzeit: <span id="runtimeVal" class="val-display">Alle</span></label><input type="range" id="maxRuntime" min="30" max="240" step="5" value="240" oninput="updateRuntimeDisplay(this.value)"></div>
-                            <div class="slider-row"><label>Min. Votes: <span id="voteCountVal" class="val-display">200</span></label><input type="range" id="minVotes" min="20" max="500" step="10" value="200" oninput="document.getElementById('voteCountVal').innerText = this.value"></div>
+            <div id="mandatoryFilters">
+                
+                <div class="row">
+                    <div class="full-width" style="text-align: center;">
+                        <div class="chip-container centered" id="mediaTypeContainer">
+                            <div class="chip active" onclick="toggleMediaType('movie', this)">Film</div>
+                            <div class="chip" onclick="toggleMediaType('tv', this)">Serie</div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="mandatoryFilters">
                 <div class="row">
-                    <div style="flex: 1;">
-                        <label>Typ</label>
-                        <select id="mediaType" onchange="loadGenres()">
-                            <option value="movie">Film</option>
-                            <option value="tv">Serie</option>
-                        </select>
-                    </div>
                     <div style="flex: 1;">
                         <label>Trailer-Sprache</label>
                         <select id="trailerLang">
@@ -239,9 +206,25 @@
                             <option value="de">Deutsch</option>
                         </select>
                     </div>
+                    <div style="flex: 1;">
+                        <label>Verfügbar in (Land)</label>
+                        <select id="countrySelect"></select>
+                    </div>
                 </div>
-                <div class="row"><div class="full-width"><label>Verfügbar in (Land)</label><select id="countrySelect"></select></div></div>
-                <div class="slider-row"><label>Min. Ø-Bewertung [0 - 10]: <span id="ratingVal" class="val-display-large">7.0</span></label><input type="range" id="minRating" min="0" max="10.0" step="0.1" value="7.0" oninput="document.getElementById('ratingVal').innerText = parseFloat(this.value).toFixed(1)"></div>
+
+                <div class="slider-row">
+                    <label>Min. Ø-Bewertung [0 - 10]: <span id="ratingVal" class="val-display-large">7.0</span></label>
+                    <input type="range" id="minRating" min="0" max="10.0" step="0.1" value="7.0" oninput="document.getElementById('ratingVal').innerText = parseFloat(this.value).toFixed(1)">
+                </div>
+
+                <button class="toggle-btn" onclick="toggleMovieFilters()">⚙️ Erweiterte Film-Filter (Genre, Jahr...)</button>
+                
+                <div id="movieFiltersSection" class="hidden-section">
+                    <div class="row"><div class="full-width"><label>Genre (Mehrfachauswahl möglich)</label><div id="genreBox" class="chip-container">Lade...</div></div></div>
+                    <div class="row"><div class="full-width"><label>Frühestes Jahr</label><select id="minYearSelect"><option value="">Beliebig</option></select></div></div>
+                    <div class="slider-row"><label>Max. Laufzeit: <span id="runtimeVal" class="val-display">Alle</span></label><input type="range" id="maxRuntime" min="30" max="240" step="5" value="240" oninput="updateRuntimeDisplay(this.value)"></div>
+                    <div class="slider-row"><label>Min. Votes: <span id="voteCountVal" class="val-display">200</span></label><input type="range" id="minVotes" min="20" max="500" step="10" value="200" oninput="document.getElementById('voteCountVal').innerText = this.value"></div>
+                </div>
             </div>
 
             <div id="snackFilters" class="hidden">
@@ -249,11 +232,28 @@
                 <div class="full-width" style="text-align: center;">
                     <label style="margin-bottom:15px; justify-content: center;">Snack-Präferenz</label>
                     <div class="chip-container centered" id="snackChipContainer">
-                        <div class="chip active" onclick="selectSnackPref('all', this)">Süß / Salzig</div>
-                        <div class="chip" onclick="selectSnackPref('sweet', this)">Süß</div>
-                        <div class="chip" onclick="selectSnackPref('salty', this)">Salzig</div>
+                        <div class="chip active" onclick="toggleSnackType(this)" data-type="sweet">Süß</div>
+                        <div class="chip active" onclick="toggleSnackType(this)" data-type="salty">Salzig</div>
                     </div>
-                    <input type="hidden" id="snackType" value="all">
+                </div>
+
+                <button class="toggle-btn" onclick="toggleSnackEditor()">🍿 Snack-Datenbank bearbeiten</button>
+                
+                <div id="snackEditorSection" class="hidden-section">
+                    <div style="background:#222; padding:15px; border-radius:8px;">
+                        <label style="color:var(--primary); margin-bottom:10px;">Neuen Snack hinzufügen</label>
+                        <div class="add-snack-form">
+                            <input type="text" id="newSnackName" placeholder="Name">
+                            <input type="text" id="newSnackEmoji" placeholder="Emoji" style="flex:0 0 60px;">
+                            <select id="newSnackType" style="flex:0 0 90px;">
+                                <option value="salty">Salzig</option>
+                                <option value="sweet">Süß</option>
+                            </select>
+                            <button class="btn-small" onclick="addCustomSnack()">+</button>
+                        </div>
+                        <div id="snackListDisplay" class="snack-list"></div>
+                        <button class="btn-small" onclick="resetSnacks()" style="width:100%; border-color:#555; color:#aaa; font-size:0.8rem;">🔄 Reset DB</button>
+                    </div>
                 </div>
             </div>
 
@@ -304,18 +304,12 @@
 <script>
     const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; 
 
-    // *** KONFIGURATION ***
     const GIF_DURATION = 5000;         
     const PAUSE_DARK_SCREEN = 500;     
 
-    // --- NEU: Automatische GIF Liste (intro1.gif bis intro28.gif) ---
     const introGifs = [];
-    for (let i = 1; i <= 28; i++) {
-        // WICHTIG: Dieser Pfad setzt voraus, dass du einen Ordner "gifs" neben der index.html hast.
-        introGifs.push(`./gifs/intro${i}.gif`);
-    }
+    for (let i = 1; i <= 28; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
 
-    // Standard-Snacks
     const defaultSnacks = [ 
         { name: "Popcorn (Salzig)", type: "salty", icon: "🍿", desc: "Der absolute Klassiker." }, 
         { name: "Nachos & Käse", type: "salty", icon: "🧀", desc: "Käsig, warm, lecker." }, 
@@ -329,15 +323,15 @@
         { name: "Pistazien", type: "salty", icon: "🥜", desc: "Harte Schale, leckerer Kern." } 
     ];
 
-    // Aktive Snack DB (wird geladen)
     let snackDB = [];
+    let selectedMediaTypes = ['movie']; // Default nur Film
 
     const state = { media: { history: [], index: -1 }, snack: { history: [], index: -1 }, genres: { movie: [], tv: [] }, selectedGenres: [] };
     let introDone = false;
 
     window.onload = async () => {
         window.scrollTo(0,0);
-        loadSnacksFromStorage(); // Datenbank laden
+        loadSnacksFromStorage();
         startIntroSequence();
         populateYearPicker();
         await loadCountries();
@@ -345,144 +339,166 @@
         updateUI();
     };
 
-    // --- DATENBANK LOGIK ---
-    function loadSnacksFromStorage() {
-        const stored = localStorage.getItem('mySnacks');
-        if (stored) {
-            snackDB = JSON.parse(stored);
+    // --- NEUE FILTER LOGIKEN ---
+    function toggleMovieFilters() { document.getElementById('movieFiltersSection').classList.toggle('show'); }
+    function toggleSnackEditor() { document.getElementById('snackEditorSection').classList.toggle('show'); }
+
+    // Media Type Logic (Multi Select)
+    function toggleMediaType(type, el) {
+        el.classList.toggle('active');
+        if(selectedMediaTypes.includes(type)) {
+            selectedMediaTypes = selectedMediaTypes.filter(t => t !== type);
         } else {
-            snackDB = [...defaultSnacks]; // Kopie der Defaults
+            selectedMediaTypes.push(type);
         }
-        renderSnackEditorList();
+        // Genre neu laden basierend auf der Auswahl? 
+        // Einfachheitshalber laden wir Genres für den zuletzt geklickten Typ oder Movie als Fallback
+        if(type) loadGenres(type); 
     }
 
+    // Snack Type Logic (Multi Select)
+    function toggleSnackType(el) {
+        el.classList.toggle('active');
+    }
+
+    // --- DB LOGIC ---
+    function loadSnacksFromStorage() {
+        const stored = localStorage.getItem('mySnacks');
+        snackDB = stored ? JSON.parse(stored) : [...defaultSnacks];
+        renderSnackEditorList();
+    }
     function saveSnacksToStorage() {
         localStorage.setItem('mySnacks', JSON.stringify(snackDB));
         renderSnackEditorList();
     }
-
     function addCustomSnack() {
         const name = document.getElementById('newSnackName').value;
         const emoji = document.getElementById('newSnackEmoji').value || '😋';
         const type = document.getElementById('newSnackType').value;
-
-        if (!name) return alert("Bitte einen Namen eingeben!");
-
+        if (!name) return alert("Name fehlt!");
         snackDB.push({ name: name, type: type, icon: emoji, desc: "Eigener Snack" });
         saveSnacksToStorage();
-        
-        // Felder leeren
         document.getElementById('newSnackName').value = '';
-        document.getElementById('newSnackEmoji').value = '';
     }
-
     function deleteSnack(index) {
-        if (confirm("Diesen Snack wirklich löschen?")) {
-            snackDB.splice(index, 1);
-            saveSnacksToStorage();
-        }
+        if (confirm("Löschen?")) { snackDB.splice(index, 1); saveSnacksToStorage(); }
     }
-
     function resetSnacks() {
-        if (confirm("Alle eigenen Änderungen verwerfen und auf Standard zurücksetzen?")) {
-            localStorage.removeItem('mySnacks');
-            loadSnacksFromStorage();
-        }
+        if (confirm("Reset?")) { localStorage.removeItem('mySnacks'); loadSnacksFromStorage(); }
     }
-
     function renderSnackEditorList() {
-        const list = document.getElementById('snackListDisplay');
-        list.innerHTML = '';
+        const list = document.getElementById('snackListDisplay'); list.innerHTML = '';
         snackDB.forEach((item, index) => {
-            const div = document.createElement('div');
-            div.className = 'snack-item';
-            div.innerHTML = `
-                <div class="snack-info">
-                    <span style="font-size:1.2rem;">${item.icon}</span>
-                    <span>${item.name} <small style="color:#777">(${item.type === 'sweet' ? 'Süß' : 'Salzig'})</small></span>
-                </div>
-                <button class="delete-btn" onclick="deleteSnack(${index})">🗑</button>
-            `;
+            const div = document.createElement('div'); div.className = 'snack-item';
+            div.innerHTML = `<div class="snack-info"><span>${item.icon}</span><span>${item.name} <small style="color:#777">(${item.type})</small></span></div><button class="delete-btn" onclick="deleteSnack(${index})">🗑</button>`;
             list.appendChild(div);
         });
     }
 
-    // --- INTRO LOGIK ---
+    // --- INTRO & CORE ---
     function forceStartApp() {
         if(introDone) return;
-        const overlay = document.getElementById('loadingOverlay');
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('mainMarquee').classList.remove('in-center');
         const sign = document.getElementById('cinemaSign');
-        const marquee = document.getElementById('mainMarquee');
-        const mainContent = document.getElementById('mainContent');
-        overlay.style.display = 'none';
-        marquee.classList.remove('in-center');
-        sign.classList.add('visible');
-        sign.classList.add('stable-on');
-        mainContent.classList.add('fade-in');
+        sign.classList.add('visible'); sign.classList.add('stable-on');
+        document.getElementById('mainContent').classList.add('fade-in');
         introDone = true;
     }
-
     function startIntroSequence() {
         if(introDone) return;
-        const overlay = document.getElementById('loadingOverlay');
         const img = document.getElementById('introGif');
-        const sign = document.getElementById('cinemaSign');
-        const marquee = document.getElementById('mainMarquee');
-        const mainContent = document.getElementById('mainContent');
-        
         if (introGifs.length > 0) { 
-            img.src = introGifs[Math.floor(Math.random() * introGifs.length)]; 
+            img.src = introGifs[Math.floor(Math.random() * introGifs.length)];
             img.onload = () => { img.classList.add('loaded'); };
             img.onerror = () => { console.log("GIF Error"); forceStartApp(); };
         } else { forceStartApp(); return; }
-
+        
         setTimeout(() => {
             if(introDone) return;
-            overlay.classList.add('hidden');
-            
+            document.getElementById('loadingOverlay').classList.add('hidden');
             setTimeout(() => {
-                overlay.style.display = 'none';
+                document.getElementById('loadingOverlay').style.display = 'none';
+                const sign = document.getElementById('cinemaSign');
                 sign.classList.add('visible');
                 setTimeout(() => {
                     sign.classList.add('flicker-start');
                     setTimeout(() => {
-                        sign.classList.remove('flicker-start');
-                        sign.classList.add('stable-on');
-                        marquee.classList.remove('in-center');
-                        setTimeout(() => {
-                            mainContent.classList.add('fade-in');
-                            introDone = true;
-                        }, 2000); 
+                        sign.classList.remove('flicker-start'); sign.classList.add('stable-on');
+                        document.getElementById('mainMarquee').classList.remove('in-center');
+                        setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
                     }, 2800);
                 }, 500);
             }, 2000 + PAUSE_DARK_SCREEN);
-        }, GIF_DURATION); 
+        }, GIF_DURATION);
     }
 
-    // --- RESTLICHE LOGIK ---
-    function selectSnackPref(val, el) { document.getElementById('snackType').value = val; for(let c of document.getElementsByClassName('chip')) c.classList.remove('active'); el.classList.add('active'); }
-    function updateUI() { const mode = document.getElementById('appMode').value; const mP = [document.getElementById('mandatoryFilters'), document.getElementById('optionalFiltersContainer')]; const sP = document.getElementById('snackFilters'); const mC = document.getElementById('mediaCard'); const sC = document.getElementById('snackCard'); if(mode==='snack'){ mP.forEach(e=>e.classList.add('hidden')); sP.classList.remove('hidden'); mC.style.display='none'; } else { mP.forEach(e=>e.classList.remove('hidden')); if(mode==='media'){ sP.classList.add('hidden'); sC.style.display='none'; } else { sP.classList.remove('hidden'); } } }
-    
-    function toggleSettings() { document.getElementById('settingsSection').classList.toggle('show'); }
-    
+    function selectSnackPref(val, el) { 
+        // Legacy Support falls gebraucht, aber neue Logik nutzt toggleSnackType
+    }
+
+    function updateUI() {
+        const mode = document.getElementById('appMode').value;
+        const mP = [document.getElementById('mandatoryFilters')]; // Optional ist jetzt im Mandatory Block versteckt
+        const sP = document.getElementById('snackFilters');
+        const mC = document.getElementById('mediaCard'); 
+        const sC = document.getElementById('snackCard');
+        if(mode==='snack'){ mP.forEach(e=>e.classList.add('hidden')); sP.classList.remove('hidden'); mC.style.display='none'; } 
+        else { mP.forEach(e=>e.classList.remove('hidden')); if(mode==='media'){ sP.classList.add('hidden'); sC.style.display='none'; } else { sP.classList.remove('hidden'); } }
+    }
+
     function updateRuntimeDisplay(val) { document.getElementById('runtimeVal').innerText = val == 240 ? "Alle" : `<= ${val} Min`; }
     function populateYearPicker() { const s = document.getElementById('minYearSelect'); const cY = new Date().getFullYear(); for(let i=cY; i>=1900; i--) { const o = document.createElement('option'); o.value = i; o.innerText = i; s.appendChild(o); } }
-    async function loadCountries() { try { const r=await fetch(`https://api.themoviedb.org/3/configuration/countries?api_key=${API_KEY}&language=de`); const d=await r.json(); d.sort((a,b)=>a.native_name.localeCompare(b.native_name)); const s=document.getElementById('countrySelect'); const f=(cc)=>cc.toUpperCase().replace(/./g, c=>String.fromCodePoint(c.charCodeAt(0)+127397)); d.forEach(c=>{ const o=document.createElement('option'); o.value=c.iso_3166_1; o.setAttribute('data-name',c.native_name); o.innerText=`${f(c.iso_3166_1)} ${c.native_name}`; if(c.iso_3166_1==='DE')o.selected=true; s.appendChild(o); }); } catch(e){} }
-    async function loadGenres() { const t=document.getElementById('mediaType').value; const c=document.getElementById('genreBox'); c.innerHTML='Lade...'; state.selectedGenres=[]; try{ if(state.genres[t].length===0){ const r=await fetch(`https://api.themoviedb.org/3/genre/${t}/list?api_key=${API_KEY}&language=de`); const d=await r.json(); state.genres[t]=d.genres; } c.innerHTML=''; state.genres[t].forEach(g=>{ const ch=document.createElement('div'); ch.className='chip'; ch.innerText=g.name; ch.onclick=()=>{ ch.classList.toggle('active'); if(state.selectedGenres.includes(g.id)) state.selectedGenres=state.selectedGenres.filter(id=>id!==g.id); else state.selectedGenres.push(g.id); }; c.appendChild(ch); }); }catch(e){} }
     
-    async function startGeneration() { const b=document.getElementById('genBtn'); b.disabled=true; b.innerText="⏳ Suche läuft..."; const m=document.getElementById('appMode').value; try{ if(m!=='snack') await generateMedia(); if(m!=='media') generateSnack(); }catch(e){console.error(e);alert("Fehler!");} b.disabled=false; b.innerText="🎲 Vorschlag generieren 🎲"; }
+    async function loadCountries() { 
+        try { const r=await fetch(`https://api.themoviedb.org/3/configuration/countries?api_key=${API_KEY}&language=de`); const d=await r.json(); d.sort((a,b)=>a.native_name.localeCompare(b.native_name)); 
+        const s=document.getElementById('countrySelect'); const f=(cc)=>cc.toUpperCase().replace(/./g, c=>String.fromCodePoint(c.charCodeAt(0)+127397)); 
+        d.forEach(c=>{ const o=document.createElement('option'); o.value=c.iso_3166_1; o.setAttribute('data-name',c.native_name); o.innerText=`${f(c.iso_3166_1)} ${c.native_name}`; if(c.iso_3166_1==='DE')o.selected=true; s.appendChild(o); }); 
+        } catch(e){} 
+    }
     
+    async function loadGenres(typeOverride) {
+        // Nutze den ersten ausgewählten Typ für die Genres, oder 'movie' als default
+        const type = typeOverride || selectedMediaTypes[0] || 'movie'; 
+        const c=document.getElementById('genreBox'); c.innerHTML='Lade...'; state.selectedGenres=[]; 
+        try{ 
+            if(!state.genres[type] || state.genres[type].length===0){ 
+                const r=await fetch(`https://api.themoviedb.org/3/genre/${type}/list?api_key=${API_KEY}&language=de`); 
+                const d=await r.json(); state.genres[type]=d.genres; 
+            } 
+            c.innerHTML=''; 
+            state.genres[type].forEach(g=>{ const ch=document.createElement('div'); ch.className='chip'; ch.innerText=g.name; ch.onclick=()=>{ ch.classList.toggle('active'); if(state.selectedGenres.includes(g.id)) state.selectedGenres=state.selectedGenres.filter(id=>id!==g.id); else state.selectedGenres.push(g.id); }; c.appendChild(ch); }); 
+        }catch(e){} 
+    }
+
+    async function startGeneration() {
+        const btn = document.getElementById('genBtn'); btn.disabled=true; btn.innerText="⏳ Suche läuft...";
+        const mode = document.getElementById('appMode').value;
+        try { if(mode !== 'snack') await generateMedia(); if(mode !== 'media') generateSnack(); } catch(e){console.error(e);alert("Fehler!");} 
+        btn.disabled=false; btn.innerText="🎲 Vorschlag generieren 🎲";
+    }
+
     async function generateMedia() {
-        const t=document.getElementById('mediaType').value; const mr=document.getElementById('minRating').value; const mv=document.getElementById('minVotes').value; const mrt=document.getElementById('maxRuntime').value; const my=document.getElementById('minYearSelect').value; const cc=document.getElementById('countrySelect').value; const cn=document.getElementById('countrySelect').options[document.getElementById('countrySelect').selectedIndex].getAttribute('data-name');
-        let u=`https://api.themoviedb.org/3/discover/${t}?api_key=${API_KEY}&language=de-DE&sort_by=popularity.desc&vote_average.gte=${mr}&vote_count.gte=${mv}&watch_region=${cc}`;
-        if(state.selectedGenres.length>0) u+=`&with_genres=${state.selectedGenres.join(',')}`; if(mrt<240) u+=`&with_runtime.lte=${mrt}`; if(my) { const d=t==='movie'?'primary_release_date.gte':'first_air_date.gte'; u+=`&${d}=${my}-01-01`; }
+        // Prüfen ob mind. 1 Typ gewählt ist
+        if(selectedMediaTypes.length === 0) { alert("Bitte wähle Film oder Serie aus!"); return; }
+        
+        // Zufälligen Typ auswählen aus den aktiven
+        const type = selectedMediaTypes[Math.floor(Math.random() * selectedMediaTypes.length)];
+        
+        const mr=document.getElementById('minRating').value; const mv=document.getElementById('minVotes').value; const mrt=document.getElementById('maxRuntime').value; const my=document.getElementById('minYearSelect').value; const cc=document.getElementById('countrySelect').value; const cn=document.getElementById('countrySelect').options[document.getElementById('countrySelect').selectedIndex].getAttribute('data-name');
+        
+        let u=`https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&language=de-DE&sort_by=popularity.desc&vote_average.gte=${mr}&vote_count.gte=${mv}&watch_region=${cc}`;
+        if(state.selectedGenres.length>0) u+=`&with_genres=${state.selectedGenres.join(',')}`; if(mrt<240) u+=`&with_runtime.lte=${mrt}`; 
+        if(my) { const d=type==='movie'?'primary_release_date.gte':'first_air_date.gte'; u+=`&${d}=${my}-01-01`; }
+        
         const cr=await fetch(u); const cd=await cr.json(); if(!cd.results||cd.total_results===0){alert("Nichts gefunden!");return;}
         const mp=Math.min(cd.total_pages,50); const rp=Math.floor(Math.random()*mp)+1; const fr=await fetch(`${u}&page=${rp}`); const fd=await fr.json(); const i=fd.results[Math.floor(Math.random()*fd.results.length)];
-        await fetchDetails(i,t,cc,cn);
+        await fetchDetails(i,type,cc,cn);
     }
 
     async function fetchDetails(i,t,cc,cn) {
-        const l=document.getElementById('trailerLang').value; let vr=await fetch(`https://api.themoviedb.org/3/${t}/${i.id}/videos?api_key=${API_KEY}&language=${l}`); let vd=await vr.json(); let tr=vd.results.find(v=>v.site==='YouTube'&&v.type==='Trailer');
+        const l=document.getElementById('trailerLang').value; 
+        let vr=await fetch(`https://api.themoviedb.org/3/${t}/${i.id}/videos?api_key=${API_KEY}&language=${l}`); let vd=await vr.json(); let tr=vd.results.find(v=>v.site==='YouTube'&&v.type==='Trailer');
         if(!tr&&l==='de'){ vr=await fetch(`https://api.themoviedb.org/3/${t}/${i.id}/videos?api_key=${API_KEY}&language=en-US`); vd=await vr.json(); tr=vd.results.find(v=>v.site==='YouTube'&&v.type==='Trailer'); }
         const pr=await fetch(`https://api.themoviedb.org/3/${t}/${i.id}/watch/providers?api_key=${API_KEY}`); const pd=await pr.json(); const lp=pd.results[cc]||{};
         const fo={ title:i.title||i.name, desc:i.overview||"Keine Info.", rating:i.vote_average.toFixed(1), votes:i.vote_count, year:(i.release_date||i.first_air_date||"").substring(0,4), poster:i.poster_path?`https://image.tmdb.org/t/p/w300${i.poster_path}`:null, trailerId:tr?tr.key:null, providers:lp, countryName:cn };
@@ -500,14 +516,17 @@
     }
 
     function generateSnack() {
-        const t=document.getElementById('snackType').value; 
-        // WICHTIG: Nutze jetzt die dynamische snackDB statt hardcoded array
-        let p=snackDB; 
-        if(t!=='all') p=snackDB.filter(s=>s.type===t); 
-        
-        if (p.length === 0) { alert("Keine Snacks in dieser Kategorie gefunden!"); return; }
+        // Aktive Chips auslesen
+        const activeChips = document.querySelectorAll('#snackChipContainer .chip.active');
+        const activeTypes = Array.from(activeChips).map(c => c.dataset.type);
 
-        const item = p[Math.floor(Math.random() * p.length)];
+        if(activeTypes.length === 0) { alert("Bitte wähle mindestens Süß oder Salzig!"); return; }
+
+        let pool = snackDB.filter(s => activeTypes.includes(s.type));
+        
+        if (pool.length === 0) { alert("Keine Snacks in dieser Kategorie gefunden!"); return; }
+
+        const item = pool[Math.floor(Math.random() * pool.length)];
         if(state.snack.index < state.snack.history.length - 1) state.snack.history = state.snack.history.slice(0, state.snack.index + 1); 
         state.snack.history.push(item); state.snack.index++; 
         renderSnack(item);
