@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v23</title>
+    <title>Movie & Snack Roulette v24</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -114,14 +114,7 @@
         .snack-info { display: flex; align-items: center; gap: 10px; }
         
         .add-snack-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
-        
-        /* HIER: Alle Inputs gleich groß (flex: 1) */
-        .add-snack-form input[type="text"], 
-        .add-snack-form select { 
-            flex: 1 1 0; /* Gleichmäßig wachsen, Basis 0 */
-            padding: 8px; font-size: 0.9rem; 
-            min-width: 100px; /* Damit es auf Handy umbricht wenn zu eng */
-        }
+        .add-snack-form input[type="text"], .add-snack-form select { flex: 1 1 0; padding: 8px; font-size: 0.9rem; min-width: 100px; }
         
         .btn-small-add { background: #333; color: white; border: 1px solid #555; padding: 0 15px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 0 0 40px; }
         .btn-small-add:hover { background: var(--primary); border-color: var(--primary); }
@@ -165,9 +158,7 @@
             .provider-section { text-align: left; }
             .cinema-sign h1 { font-size: 1.5rem; }
             .marquee-wrapper.in-center { transform: translateY(35vh) scale(1.1); }
-            /* Auf Handy stacken die Snack Inputs */
             .add-snack-form { flex-direction: column; }
-            .add-snack-form input, .add-snack-form select { flex: 1 1 auto; }
         }
 
         .hidden { display: none !important; }
@@ -195,7 +186,7 @@
                     <label>Für was benötigst du einen Vorschlag?</label>
                     <select id="appMode" onchange="updateUI()">
                         <option value="both">Kombination: Film/Serie + Snack</option>
-                        <option value="media">Nur Film oder Serie</option>
+                        <option value="media">Nur Film/Serie</option>
                         <option value="snack">Nur Snack</option>
                     </select>
                 </div>
@@ -214,15 +205,15 @@
 
                 <div class="row">
                     <div style="flex: 1;">
+                        <label>Aufenthaltsland</label>
+                        <select id="countrySelect"></select>
+                    </div>
+                    <div style="flex: 1;">
                         <label>Trailer-Sprache</label>
                         <select id="trailerLang">
                             <option value="en" selected>Englisch</option>
                             <option value="de">Deutsch</option>
                         </select>
-                    </div>
-                    <div style="flex: 1;">
-                        <label>Verfügbar in (Land)</label>
-                        <select id="countrySelect"></select>
                     </div>
                 </div>
 
@@ -323,8 +314,8 @@
 <script>
     const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: HIER API KEY EINFÜGEN!
 
-    const GIF_DURATION = 4500;         
-    const PAUSE_DARK_SCREEN = 0;     
+    const GIF_DURATION = 5000;         
+    const PAUSE_DARK_SCREEN = 500;     
 
     const introGifs = [];
     for (let i = 1; i <= 28; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
@@ -442,7 +433,7 @@
                         setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
                     }, 2800);
                 }, 500);
-            }, 500 + PAUSE_DARK_SCREEN);
+            }, 2000 + PAUSE_DARK_SCREEN);
         }, GIF_DURATION);
     }
 
