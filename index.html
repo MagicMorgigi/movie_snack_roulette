@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v24</title>
+    <title>Movie & Snack Roulette v25</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -114,7 +114,14 @@
         .snack-info { display: flex; align-items: center; gap: 10px; }
         
         .add-snack-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
-        .add-snack-form input[type="text"], .add-snack-form select { flex: 1 1 0; padding: 8px; font-size: 0.9rem; min-width: 100px; }
+        
+        /* Gleich große Felder (Name, Typ, Emoji, Desc) */
+        .add-snack-form input[type="text"], 
+        .add-snack-form select { 
+            flex: 1 1 0; 
+            padding: 8px; font-size: 0.9rem; 
+            min-width: 100px; 
+        }
         
         .btn-small-add { background: #333; color: white; border: 1px solid #555; padding: 0 15px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 0 0 40px; }
         .btn-small-add:hover { background: var(--primary); border-color: var(--primary); }
@@ -158,7 +165,9 @@
             .provider-section { text-align: left; }
             .cinema-sign h1 { font-size: 1.5rem; }
             .marquee-wrapper.in-center { transform: translateY(35vh) scale(1.1); }
+            /* Auf Handy stacken die Snack Inputs */
             .add-snack-form { flex-direction: column; }
+            .add-snack-form input, .add-snack-form select { flex: 1 1 auto; }
         }
 
         .hidden { display: none !important; }
@@ -315,22 +324,41 @@
     const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: HIER API KEY EINFÜGEN!
 
     const GIF_DURATION = 5000;         
-    const PAUSE_DARK_SCREEN = 500;     
+    const PAUSE_DARK_SCREEN = 0;     
 
     const introGifs = [];
     for (let i = 1; i <= 28; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
 
-    const defaultSnacks = [ 
-        { name: "Popcorn (Salzig)", type: "salty", icon: "🍿", desc: "Der absolute Klassiker." }, 
-        { name: "Nachos & Käse", type: "salty", icon: "🧀", desc: "Käsig, warm, lecker." }, 
-        { name: "Tortilla Chips", type: "salty", icon: "🌶️", desc: "Knusprig mit Dip." }, 
-        { name: "Schoko-Nüsse", type: "sweet", icon: "🍫", desc: "Süß und knackig." }, 
-        { name: "Gummibärchen", type: "sweet", icon: "🧸", desc: "Fruchtig weich." }, 
-        { name: "Eiscreme", type: "sweet", icon: "🍦", desc: "Löffel raus!" }, 
-        { name: "Salzstangen", type: "salty", icon: "🥨", desc: "Der leichte Knabberspaß." }, 
-        { name: "Cookies", type: "sweet", icon: "🍪", desc: "Perfekt zu Milch." }, 
-        { name: "M&Ms", type: "sweet", icon: "🍬", desc: "Schmilzt im Mund, nicht in der Hand." }, 
-        { name: "Pistazien", type: "salty", icon: "🥜", desc: "Harte Schale, leckerer Kern." } 
+    // --- NEUE STANDARD LISTE NACH USER WUNSCH ---
+    const defaultSnacks = [
+        { name: "Edamame", type: "salty", icon: "🫛" },
+        { name: "Ofengemüse", type: "salty", icon: "🥦" },
+        { name: "Obst-Crumble", type: "sweet", icon: "🥧" },
+        { name: "Cookies", type: "sweet", icon: "🍪" },
+        { name: "Gemüsesticks", type: "salty", icon: "🥕" },
+        { name: "Mandarinen / Orangen", type: "sweet", icon: "🍊" },
+        { name: "Banane", type: "sweet", icon: "🍌" },
+        { name: "Chips (Kartoffel / Linse / Gemüse)", type: "salty", icon: "🥔" },
+        { name: "Reis- / Mais- / Linsenwaffeln", type: "salty", icon: "🍘" },
+        { name: "Joghurt / Pudding / Skyr", type: "sweet", icon: "🥣" },
+        { name: "M&M‘s", type: "sweet", icon: "🍬" },
+        { name: "Schoko", type: "sweet", icon: "🍫" },
+        { name: "Shake", type: "sweet", icon: "🥤" },
+        { name: "Roasted Chickpeas", type: "salty", icon: "🧆" },
+        { name: "Apfel", type: "sweet", icon: "🍎" },
+        { name: "Staudensellerie", type: "salty", icon: "🥬" },
+        { name: "Granatapfelkerne", type: "sweet", icon: "🍒" },
+        { name: "Studentenfutter", type: "salty", icon: "🐿️" },
+        { name: "Wasabi-Nüsse", type: "salty", icon: "🟢" },
+        { name: "Datteln", type: "sweet", icon: "🟤" },
+        { name: "Feigen", type: "sweet", icon: "🟣" },
+        { name: "Pistazien", type: "salty", icon: "🥜" },
+        { name: "Erdnüsse", type: "salty", icon: "🥜" },
+        { name: "Oliven", type: "salty", icon: "🫒" },
+        { name: "Gewürzgurken", type: "salty", icon: "🥒" },
+        { name: "Weintrauben", type: "sweet", icon: "🍇" },
+        { name: "Cherry-Tomaten", type: "salty", icon: "🍅" },
+        { name: "Zimtschnecken", type: "sweet", icon: "🥐" }
     ];
 
     let snackDB = [];
@@ -433,7 +461,7 @@
                         setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
                     }, 2800);
                 }, 500);
-            }, 2000 + PAUSE_DARK_SCREEN);
+            }, 200 + PAUSE_DARK_SCREEN);
         }, GIF_DURATION);
     }
 
