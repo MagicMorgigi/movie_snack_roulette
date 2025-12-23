@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v22</title>
+    <title>Movie & Snack Roulette v23</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -113,13 +113,15 @@
         .snack-item:last-child { border-bottom: none; }
         .snack-info { display: flex; align-items: center; gap: 10px; }
         
-        /* UPDATE: Angepasste Reihenfolge und Größen */
         .add-snack-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
-        /* Name und Desc bekommen mehr Platz, Typ und Emoji weniger */
-        .add-snack-form input[type="text"]:nth-child(1) { flex: 2 1 120px; } /* Name */
-        .add-snack-form select { flex: 1 1 90px; } /* Typ */
-        .add-snack-form input[type="text"]:nth-child(3) { flex: 1 1 80px; } /* Emoji */
-        .add-snack-form input[type="text"]:nth-child(4) { flex: 2 1 120px; } /* Desc */
+        
+        /* HIER: Alle Inputs gleich groß (flex: 1) */
+        .add-snack-form input[type="text"], 
+        .add-snack-form select { 
+            flex: 1 1 0; /* Gleichmäßig wachsen, Basis 0 */
+            padding: 8px; font-size: 0.9rem; 
+            min-width: 100px; /* Damit es auf Handy umbricht wenn zu eng */
+        }
         
         .btn-small-add { background: #333; color: white; border: 1px solid #555; padding: 0 15px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 0 0 40px; }
         .btn-small-add:hover { background: var(--primary); border-color: var(--primary); }
@@ -440,7 +442,7 @@
                         setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
                     }, 2800);
                 }, 500);
-            }, 0 + PAUSE_DARK_SCREEN);
+            }, 500 + PAUSE_DARK_SCREEN);
         }, GIF_DURATION);
     }
 
