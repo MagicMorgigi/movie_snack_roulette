@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v20</title>
+    <title>Movie & Snack Roulette v21</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -112,10 +112,15 @@
         .snack-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; font-size: 0.9rem; }
         .snack-item:last-child { border-bottom: none; }
         .snack-info { display: flex; align-items: center; gap: 10px; }
+        
+        .add-snack-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+        /* Alle Inputs gleich groß machen */
+        .add-snack-form input, .add-snack-form select { flex: 1 1 20%; padding: 8px; font-size: 0.9rem; min-width: 80px; }
+        .btn-small-add { background: #333; color: white; border: 1px solid #555; padding: 0 15px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 0 0 40px; }
+        .btn-small-add:hover { background: var(--primary); border-color: var(--primary); }
+
         .delete-btn { background: transparent; border: 1px solid var(--danger); color: var(--danger); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.8rem; }
         .delete-btn:hover { background: var(--danger); color: white; }
-        .add-snack-form { display: flex; gap: 10px; margin-bottom: 10px; }
-        .add-snack-form input, .add-snack-form select { flex: 1; padding: 8px; font-size: 0.9rem; }
         .btn-small { background: #333; color: white; border: 1px solid #555; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
         .btn-small:hover { background: #555; }
 
@@ -153,7 +158,9 @@
             .provider-section { text-align: left; }
             .cinema-sign h1 { font-size: 1.5rem; }
             .marquee-wrapper.in-center { transform: translateY(35vh) scale(1.1); }
+            /* Auf Handy stacken die Snack Inputs */
             .add-snack-form { flex-direction: column; }
+            .add-snack-form input, .add-snack-form select { flex: 1 1 auto; }
         }
 
         .hidden { display: none !important; }
@@ -244,15 +251,16 @@
                         <label style="color:var(--primary); margin-bottom:10px;">Neuen Snack hinzufügen</label>
                         <div class="add-snack-form">
                             <input type="text" id="newSnackName" placeholder="Name">
-                            <input type="text" id="newSnackEmoji" placeholder="Emoji" style="flex:0 0 60px;">
-                            <select id="newSnackType" style="flex:0 0 90px;">
+                            <input type="text" id="newSnackEmoji" placeholder="Emoji">
+                            <select id="newSnackType">
                                 <option value="salty">Salzig</option>
                                 <option value="sweet">Süß</option>
                             </select>
-                            <button class="btn-small" onclick="addCustomSnack()">+</button>
+                            <input type="text" id="newSnackDesc" placeholder="Beschreibung (opt.)">
+                            <button class="btn-small-add" onclick="addCustomSnack()">+</button>
                         </div>
                         <div id="snackListDisplay" class="snack-list"></div>
-                        <button class="btn-small" onclick="resetSnacks()" style="width:100%; border-color:#555; color:#aaa; font-size:0.8rem;">🔄 Reset DB</button>
+                        <button class="btn-small" onclick="resetSnacks()" style="width:100%; border-color:#555; color:#aaa; font-size:0.8rem;">🔄 DB zurücksetzen</button>
                     </div>
                 </div>
             </div>
@@ -304,8 +312,8 @@
 <script>
     const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: HIER API KEY EINFÜGEN!
 
-    const GIF_DURATION = 4000;         
-    const PAUSE_DARK_SCREEN = 0;     
+    const GIF_DURATION = 5000;         
+    const PAUSE_DARK_SCREEN = 500;     
 
     const introGifs = [];
     for (let i = 1; i <= 28; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
@@ -364,13 +372,19 @@
     }
     function addCustomSnack() {
         const name = document.getElementById('newSnackName').value;
-        const emoji = document.getElementById('newSnackEmoji').value || '😋';
+        const emoji = document.getElementById('newSnackEmoji').value || '🤤';
         const type = document.getElementById('newSnackType').value;
+        const desc = document.getElementById('newSnackDesc').value; // Optional
+
         if (!name) return alert("Name fehlt!");
-        // Keine Description für Custom Snacks, damit sie im UI ausgeblendet wird
-        snackDB.push({ name: name, type: type, icon: emoji }); 
+        
+        snackDB.push({ name: name, type: type, icon: emoji, desc: desc }); 
         saveSnacksToStorage();
+        
+        // Felder resetten
         document.getElementById('newSnackName').value = '';
+        document.getElementById('newSnackEmoji').value = '';
+        document.getElementById('newSnackDesc').value = '';
     }
     function deleteSnack(index) { if (confirm("Löschen?")) { snackDB.splice(index, 1); saveSnacksToStorage(); } }
     function resetSnacks() { if (confirm("Reset?")) { localStorage.removeItem('mySnacks'); loadSnacksFromStorage(); } }
@@ -417,7 +431,7 @@
                         setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
                     }, 2800);
                 }, 500);
-            }, 1500 + PAUSE_DARK_SCREEN);
+            }, 2000 + PAUSE_DARK_SCREEN);
         }, GIF_DURATION);
     }
 
@@ -448,7 +462,6 @@
             if(!state.genres[type] || state.genres[type].length===0){ 
                 const r=await fetch(`https://api.themoviedb.org/3/genre/${type}/list?api_key=${API_KEY}&language=de`); 
                 const d=await r.json(); 
-                // HIER: Sortierung A-Z
                 state.genres[type]=d.genres.sort((a, b) => a.name.localeCompare(b.name)); 
             } 
             c.innerHTML=''; 
@@ -513,7 +526,6 @@
         if(m==='both'){ h.innerText="Wie wär's dazu mit..."; h.style.color='#ccc'; h.style.fontSize='1.2rem'; } else { h.innerText="Snack-Time! 🤤🥳"; h.style.color='var(--primary)'; h.style.fontSize='1.8rem'; h.style.fontWeight='bold'; }
         document.getElementById('sName').innerText=i.name; document.getElementById('sEmoji').innerText=i.icon; 
         
-        // HIER: Beschreibung optional machen
         const dEl = document.getElementById('sDesc');
         if(i.desc) {
             dEl.innerText=i.desc;
