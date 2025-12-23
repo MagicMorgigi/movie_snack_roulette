@@ -313,7 +313,7 @@
     const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: HIER API KEY EINFÜGEN!
 
     const GIF_DURATION = 5000;         
-    const PAUSE_DARK_SCREEN = 500;     
+    const PAUSE_DARK_SCREEN = 0;     
 
     const introGifs = [];
     for (let i = 1; i <= 28; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
@@ -431,7 +431,7 @@
                         setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
                     }, 2800);
                 }, 500);
-            }, 2000 + PAUSE_DARK_SCREEN);
+            }, 500 + PAUSE_DARK_SCREEN);
         }, GIF_DURATION);
     }
 
