@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v30</title>
+    <title>Movie & Snack Roulette v31</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -52,8 +52,11 @@
             perspective: 800px; z-index: 100;
             width: 100%; max-width: 850px;
             display: flex; justify-content: center;
+            
+            /* Hier die Transition festlegen für die Fahrt */
             transform: translateY(0) scale(1); 
             transition: transform 2.5s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform; /* Hilft dem Browser bei der Performance */
         }
         .marquee-wrapper.in-center { transform: translateY(40vh) scale(1.1); }
 
@@ -80,60 +83,70 @@
             10% { color: #fff; text-shadow: 0 0 10px var(--gold); }
             15% { color: #333; text-shadow: none; }
             30% { color: #fff; text-shadow: 0 0 15px var(--gold); }
-            35% { color: #333; text-shadow: none; }
             50% { color: #444; text-shadow: none; }
             70% { color: #fff; text-shadow: 0 0 10px var(--gold); }
             100% { color: #eee; text-shadow: 0 0 2px rgba(255,255,255,0.5), 0 0 8px rgba(255, 204, 0, 0.4); }
         }
 
-        /* --- 3. CHARACTER SELECTION (NEU) --- */
+        /* --- 3. CHARACTER SELECTION --- */
         #characterSelection {
             display: none; /* Erst versteckt */
             flex-direction: column;
             align-items: center;
             width: 100%;
             max-width: 600px;
-            animation: fadeIn 1s ease-out;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         
+        /* Basis-Status für Animationselemente (versteckt) */
+        .char-element {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        /* Wenn sichtbar */
+        .char-element.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .char-img {
-            height: 250px; /* Höhe der Figuren */
+            height: 220px; /* Etwas kleiner für Platz */
             width: auto;
             filter: drop-shadow(0 0 15px rgba(255,204,0,0.2));
             animation: floatChar 4s ease-in-out infinite;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .char-dialog-box {
             background: #222;
             border: 2px solid var(--gold);
             border-radius: 12px;
-            padding: 15px 25px;
+            padding: 12px 20px;
             color: #fff;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             position: relative;
             box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
-        /* Sprechblasen-Spitze */
         .char-dialog-box::after {
             content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
             border-width: 0 10px 10px 10px; border-style: solid; border-color: transparent transparent var(--gold) transparent;
         }
 
         .selection-btn-container {
-            display: flex; flex-direction: column; gap: 15px; width: 100%;
+            display: flex; flex-direction: column; gap: 10px; width: 100%;
         }
 
+        /* Update: Kleinere Buttons */
         .intro-choice-btn {
             background: linear-gradient(135deg, #333, #444);
             border: 1px solid #555;
             color: white;
-            padding: 20px;
-            font-size: 1.1rem;
-            border-radius: 10px;
+            padding: 14px; /* Kleineres Padding */
+            font-size: 1rem; /* Kleinere Schrift */
+            border-radius: 8px;
             cursor: pointer;
             transition: transform 0.2s, background 0.2s, border-color 0.2s;
             text-align: center;
@@ -143,7 +156,7 @@
             transform: scale(1.02);
             background: linear-gradient(135deg, #444, #555);
             border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(229, 9, 20, 0.4);
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.4);
         }
 
         @keyframes floatChar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -151,7 +164,7 @@
         /* --- 4. MAIN CONTENT --- */
         #mainContent {
             width: 100%; max-width: 850px;
-            display: none; /* Startet ausgeblendet */
+            display: none;
             flex-direction: column; align-items: center;
             opacity: 0; transform: translateY(30px);
             transition: opacity 1s ease, transform 1s ease;
@@ -259,10 +272,10 @@
     </div>
 
     <div id="characterSelection">
-        <img id="charImg" src="" alt="Character" class="char-img">
-        <div class="char-dialog-box">Für was benötigst du einen Vorschlag?</div>
+        <img id="charImg" src="" alt="Character" class="char-img char-element">
+        <div class="char-dialog-box char-element">Für was benötigst du einen Vorschlag?</div>
         
-        <div class="selection-btn-container">
+        <div class="selection-btn-container char-element">
             <button class="intro-choice-btn" onclick="selectStartMode('both')">Kombination: Film/Serie + Snack</button>
             <button class="intro-choice-btn" onclick="selectStartMode('media')">Nur Film/Serie</button>
             <button class="intro-choice-btn" onclick="selectStartMode('snack')">Nur Snack</button>
@@ -388,12 +401,18 @@
 <script>
     const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- API KEY EINFÜGEN
 
+    // *** TIMING KONFIGURATION (in Millisekunden) ***
     const TIMING = {
         GIF_FADE_OUT: 0,   
-        HINT_DELAY: 5000,     
-        DARK_PAUSE: 500,      
-        FLICKER_TIME: 2500,   
-        MOVE_TIME: 0       
+        HINT_DELAY: 4000,     
+        DARK_PAUSE: 200,      
+        FLICKER_TIME: 2000,   
+        MOVE_TIME: 2000,
+        
+        // NEUE ZEITEN FÜR SEQUENZIELLES EINBLENDEN
+        CHAR_APPEAR: 100,     // Wann Bild kommt (nachdem Schild oben ist)
+        TEXT_APPEAR: 1000,    // Wann Text kommt
+        BTNS_APPEAR: 1800     // Wann Buttons kommen
     };
 
     // --- CHARACTERS ---
@@ -427,7 +446,6 @@
         updateUI();
     };
 
-    // --- SELECTION LOGIC ---
     function selectStartMode(mode) {
         document.getElementById('appMode').value = mode;
         updateUI();
@@ -436,7 +454,6 @@
         setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); }, 50);
     }
 
-    // --- INTRO SEQUENCE ---
     function dismissIntro() {
         if(introDone) return;
         clearTimeout(hintTimer);
@@ -444,8 +461,8 @@
         const sign = document.getElementById('cinemaSign');
         const marquee = document.getElementById('mainMarquee');
         const charSection = document.getElementById('characterSelection');
-        const charImg = document.getElementById('charImg');
-
+        
+        // Overlay ausblenden
         overlay.classList.add('hidden');
         
         setTimeout(() => {
@@ -456,14 +473,35 @@
                 setTimeout(() => {
                     sign.classList.remove('flicker-start'); 
                     sign.classList.add('stable-on');
+                    
+                    // START: Schild fährt hoch
                     marquee.classList.remove('in-center');
                     
-                    // Warten bis Schild oben ist, dann Charakter zeigen
+                    // Warten bis Schild oben ist (MOVE_TIME), dann Sequenz starten
                     setTimeout(() => { 
+                        // Zufallscharakter wählen
                         const randomChar = characters[Math.floor(Math.random() * characters.length)];
-                        charImg.src = randomChar;
+                        document.getElementById('charImg').src = randomChar;
+                        
+                        // Container sichtbar schalten (Inhalte sind noch unsichtbar durch CSS)
                         charSection.style.display = 'flex';
-                        introDone = true; 
+                        
+                        // 1. Bild zeigen
+                        setTimeout(() => {
+                            document.getElementById('charImg').classList.add('visible');
+                        }, TIMING.CHAR_APPEAR);
+
+                        // 2. Text zeigen
+                        setTimeout(() => {
+                            document.querySelector('.char-dialog-box').classList.add('visible');
+                        }, TIMING.TEXT_APPEAR);
+
+                        // 3. Buttons zeigen
+                        setTimeout(() => {
+                            document.querySelector('.selection-btn-container').classList.add('visible');
+                            introDone = true; 
+                        }, TIMING.BTNS_APPEAR);
+
                     }, TIMING.MOVE_TIME);
                 }, TIMING.FLICKER_TIME);
             }, 500); 
@@ -478,8 +516,12 @@
         document.getElementById('cinemaSign').classList.add('visible', 'stable-on');
         
         const charImg = document.getElementById('charImg');
-        charImg.src = characters[0]; // Fallback
-        document.getElementById('characterSelection').style.display = 'flex';
+        charImg.src = characters[0]; 
+        
+        const charSection = document.getElementById('characterSelection');
+        charSection.style.display = 'flex';
+        // Alles sofort sichtbar machen
+        charSection.querySelectorAll('.char-element').forEach(el => el.classList.add('visible'));
         introDone = true;
     }
 
@@ -497,7 +539,6 @@
         }, TIMING.HINT_DELAY);
     }
 
-    // --- RESTLICHE LOGIK ---
     function toggleMovieFilters() { document.getElementById('movieFiltersSection').classList.toggle('show'); }
     function toggleSnackEditor() { document.getElementById('snackEditorSection').classList.toggle('show'); }
 
