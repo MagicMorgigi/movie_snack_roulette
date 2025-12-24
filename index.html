@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v28</title>
+    <title>Movie & Snack Roulette v29</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -21,7 +21,6 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            /* Transition Zeit wird nun per JS gesetzt, default fallback: */
             transition: opacity 1.5s ease-in-out, visibility 1.5s;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent; 
@@ -55,7 +54,6 @@
             width: 100%; max-width: 850px;
             display: flex; justify-content: center;
             transform: translateY(0) scale(1); 
-            /* Transition Zeit wird per JS überschrieben (TIMING.MOVE_TIME) */
             transition: transform 2.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
         .marquee-wrapper.in-center { transform: translateY(40vh) scale(1.1); }
@@ -170,7 +168,9 @@
         .snack-content { text-align: center; padding: 40px 20px; }
         .snack-dynamic-header { font-weight: 300; margin-bottom: 20px; display: block; }
         .snack-visual-row { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px; }
-        .snack-emoji { font-size: 6rem; display: block; animation: float 3s ease-in-out infinite; }
+        
+        /* UPDATE: Schriftgröße etwas angepasst, damit Emoji-Combos nicht umbrechen */
+        .snack-emoji { font-size: 5rem; display: block; animation: float 3s ease-in-out infinite; white-space: nowrap; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
         @media (max-width: 600px) {
@@ -332,49 +332,61 @@
 </div>
 
 <script>
-    const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- API KEY EINFÜGEN
+    const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: API KEY EINFÜGEN!
 
     // *** TIMING KONFIGURATION (in Millisekunden) ***
     const TIMING = {
-        GIF_FADE_OUT: 0,   // Zeit für GIF Ausblenden
-        HINT_DELAY: 5000,     // Zeit bis "Klicke auf..." erscheint
-        DARK_PAUSE: 500,      // Zeit im Dunkeln nach Klick
-        FLICKER_TIME: 2500,   // Dauer des Flackerns
-        MOVE_TIME: 2000       // Dauer der Fahrt nach oben
+        GIF_FADE_OUT: 0,   
+        HINT_DELAY: 5000,     
+        DARK_PAUSE: 500,      
+        FLICKER_TIME: 2500,   
+        MOVE_TIME: 2000       
     };
 
     const introGifs = [];
-    for (let i = 1; i <= 28; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
+    for (let i = 1; i <= 25; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
 
+    // --- NEUE DB MIT COMBO-EMOJIS ---
     const defaultSnacks = [
-        { name: "Edamame", type: "salty", icon: "🫛" },
-        { name: "Ofengemüse", type: "salty", icon: "🥦" },
-        { name: "Obst-Crumble", type: "sweet", icon: "🥧" },
+        { name: "Edamame", type: "salty", icon: "🫛🧂" },
+        { name: "Ofengemüse", type: "salty", icon: "🥔🥕🥦" },
+        { name: "Crumble", type: "sweet", icon: "🥧🍎" },
         { name: "Cookies", type: "sweet", icon: "🍪" },
-        { name: "Gemüsesticks", type: "salty", icon: "🥕" },
-        { name: "Mandarinen / Orangen", type: "sweet", icon: "🍊" },
+        { name: "Gemüsesticks", type: "salty", icon: "🥕🥒" },
+        { name: "Mandarinen", type: "sweet", icon: "🍊" },
         { name: "Banane", type: "sweet", icon: "🍌" },
-        { name: "Chips (Kartoffel / Linse / Gemüse)", type: "salty", icon: "🥔" },
-        { name: "Reis- / Mais- / Linsenwaffeln", type: "salty", icon: "🍘" },
-        { name: "Joghurt / Pudding / Skyr", type: "sweet", icon: "🥣" },
-        { name: "M&M‘s", type: "sweet", icon: "🍬" },
+        { name: "Chips", type: "salty", icon: "🥔🌶️" },
+        { name: "Reis- / Mais- / Linsenwaffeln", type: "salty", icon: "🍘🌽" },
+        { name: "Joghurt / Pudding / Skyr", type: "sweet", icon: "🥣🫐" },
+        { name: "M&M‘s", type: "sweet", icon: "🍬🔴" },
         { name: "Schoko", type: "sweet", icon: "🍫" },
-        { name: "Shake", type: "sweet", icon: "🥤" },
-        { name: "Roasted Chickpeas", type: "salty", icon: "🧆" },
+        { name: "Shake", type: "sweet", icon: "🥤🍓" },
+        { name: "Geröstete Kichererbsen", type: "salty", icon: "🧆🔥" },
         { name: "Apfel", type: "sweet", icon: "🍎" },
         { name: "Staudensellerie", type: "salty", icon: "🥬" },
-        { name: "Granatapfelkerne", type: "sweet", icon: "🍒" },
-        { name: "Studentenfutter", type: "salty", icon: "🐿️" },
-        { name: "Wasabi-Nüsse", type: "salty", icon: "🟢" },
-        { name: "Datteln", type: "sweet", icon: "🟤" },
+        { name: "Granatapfelkerne", type: "sweet", icon: "🥣🔴" },
+        { name: "Studentenfutter", type: "salty", icon: "🥜🍇" },
+        { name: "Wasabi-Nüsse", type: "salty", icon: "🥜🟢" },
+        { name: "Datteln", type: "sweet", icon: "🌴🟤" },
         { name: "Feigen", type: "sweet", icon: "🟣" },
-        { name: "Pistazien", type: "salty", icon: "🥜" },
-        { name: "Erdnüsse", type: "salty", icon: "🥜" },
+        { name: "Pistazien", type: "salty", icon: "🥜💚" },
+        { name: "Nüsse", type: "salty", icon: "🥜🌰" },
+        { name: "Sonnenblumenkerne", type: "salty", icon: "🌻" },
         { name: "Oliven", type: "salty", icon: "🫒" },
-        { name: "Gewürzgurken", type: "salty", icon: "🥒" },
+        { name: "(Saure) Gurken", type: "salty", icon: "🥒🫙" },
         { name: "Weintrauben", type: "sweet", icon: "🍇" },
         { name: "Cherry-Tomaten", type: "salty", icon: "🍅" },
-        { name: "Zimtschnecken", type: "sweet", icon: "🥐" }
+        { name: "Zimtschnecken", type: "sweet", icon: "🌪️🍩" },
+        { name: "Melone", type: "sweet", icon: "🍉🍈" },
+        { name: "Mango", type: "sweet", icon: "🥭" },
+        { name: "Eiscreme", type: "sweet", icon: "🍦" },
+        { name: "Waffeln / Crepes / Pancakes", type: "sweet", icon: "🧇🥞" },
+        { name: "Obstsalat / -teller", type: "sweet", icon: "🥣🍎🍌" },
+        { name: "Salat", type: "salty", icon: "🥗" },
+        { name: "Käseplatte + Trauben", type: "salty", icon: "🧀🍇" },
+        { name: "Maiskolben", type: "salty", icon: "🌽🧈" },
+        { name: "Kuchen", type: "sweet", icon: "🍰" },
+        { name: "Müsli", type: "sweet", icon: "🥣🌾" }
     ];
 
     let snackDB = [];
@@ -386,7 +398,6 @@
 
     window.onload = async () => {
         window.scrollTo(0,0);
-        // CSS Transition Zeit setzen
         document.getElementById('mainMarquee').style.transitionDuration = `${TIMING.MOVE_TIME}ms`;
         document.getElementById('loadingOverlay').style.transitionDuration = `${TIMING.GIF_FADE_OUT}ms`;
         
@@ -400,7 +411,6 @@
 
     function dismissIntro() {
         if(introDone) return;
-        
         clearTimeout(hintTimer);
         const overlay = document.getElementById('loadingOverlay');
         const sign = document.getElementById('cinemaSign');
@@ -423,7 +433,7 @@
                         introDone = true; 
                     }, TIMING.MOVE_TIME);
                 }, TIMING.FLICKER_TIME);
-            }, 500); // Kurze Pause vor Flackern
+            }, 500); 
         }, TIMING.GIF_FADE_OUT + TIMING.DARK_PAUSE);
     }
 
@@ -452,7 +462,6 @@
         }, TIMING.HINT_DELAY);
     }
 
-    // --- RESTLICHE LOGIK (Filter, DB, API) ---
     function toggleMovieFilters() { document.getElementById('movieFiltersSection').classList.toggle('show'); }
     function toggleSnackEditor() { document.getElementById('snackEditorSection').classList.toggle('show'); }
 
