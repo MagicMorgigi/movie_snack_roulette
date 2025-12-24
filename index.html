@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v26</title>
+    <title>Movie & Snack Roulette v27</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -22,7 +22,9 @@
             background: #000; z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 1.5s ease-in-out, visibility 1.5s;
-            cursor: pointer; /* Zeigt an, dass man klicken kann */
+            cursor: pointer;
+            /* Kein Flackern beim Laden: */
+            -webkit-tap-highlight-color: transparent; 
         }
         #loadingOverlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         
@@ -32,21 +34,30 @@
             opacity: 0; transition: opacity 0.5s, transform 0.2s; 
         }
         .loading-gif.loaded { opacity: 1; }
-        .loading-gif:hover { transform: scale(1.02); } /* Leichter Zoom beim Hover */
+        .loading-gif:hover { transform: scale(1.02); } 
 
         /* Der Hinweis-Text */
         .click-hint {
-            margin-top: 20px;
-            color: #666;
+            margin-top: 25px;
+            color: #888;
             font-size: 0.9rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            
+            /* Startzustand: Komplett unsichtbar */
             opacity: 0;
-            transition: opacity 1s ease-in;
+            visibility: hidden; 
+            
+            /* Sanftes Einblenden */
+            transition: opacity 1.5s ease-in-out;
         }
-        .click-hint.visible { opacity: 1; animation: pulseText 2s infinite; }
         
-        @keyframes pulseText { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        /* Zustand: Sichtbar */
+        .click-hint.visible { 
+            opacity: 1; 
+            visibility: visible;
+        }
 
         /* --- 2. CINEMA MARQUEE --- */
         .marquee-wrapper {
@@ -191,7 +202,7 @@
 
 <div id="loadingOverlay" onclick="dismissIntro()">
     <img id="introGif" src="" alt="Loading..." class="loading-gif">
-    <div id="clickHint" class="click-hint">Klicke auf das GIF</div>
+    <div id="clickHint" class="click-hint">Klicke auf den Bildschirm</div>
 </div>
 
 <div class="wrapper">
@@ -272,12 +283,16 @@
                         <label style="color:var(--primary); margin-bottom:10px;">Neuen Snack hinzufügen</label>
                         <div class="add-snack-form">
                             <input type="text" id="newSnackName" placeholder="Name">
+                            
                             <select id="newSnackType">
                                 <option value="salty">Salzig</option>
                                 <option value="sweet">Süß</option>
                             </select>
+
                             <input type="text" id="newSnackEmoji" placeholder="Emoji (opt.)">
+                            
                             <input type="text" id="newSnackDesc" placeholder="Beschreibung (opt.)">
+                            
                             <button class="btn-small-add" onclick="addCustomSnack()">+</button>
                         </div>
                         <div id="snackListDisplay" class="snack-list"></div>
@@ -333,7 +348,6 @@
 <script>
     const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: API KEY EINFÜGEN!
 
-    // ZEIT IN MILLISEKUNDEN, bis der Hinweis erscheint
     const HINT_DELAY = 4000;     
 
     const introGifs = [];
@@ -387,16 +401,10 @@
         updateUI();
     };
 
-    // --- MANUELLE ÜBERGABE VOM INTRO ---
     function dismissIntro() {
         if(introDone) return;
-        
-        // Timer stoppen, falls User schneller klickt als Hinweis erscheint
         clearTimeout(hintTimer);
-
         document.getElementById('loadingOverlay').classList.add('hidden');
-        
-        // Starte die Transition der Website
         setTimeout(() => {
             document.getElementById('loadingOverlay').style.display = 'none';
             const sign = document.getElementById('cinemaSign');
@@ -409,11 +417,10 @@
                     setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
                 }, 2800);
             }, 500);
-        }, 1500); // Overlay Fade Out Zeit
+        }, 1500); 
     }
 
     function forceStartApp() {
-        // Fallback falls GIF fehlschlägt
         if(introDone) return;
         clearTimeout(hintTimer);
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -433,13 +440,11 @@
             img.onerror = () => { console.log("GIF Error"); forceStartApp(); };
         } else { forceStartApp(); return; }
         
-        // HIER: Timer starten, der den Text anzeigt
         hintTimer = setTimeout(() => {
             document.getElementById('clickHint').classList.add('visible');
         }, HINT_DELAY);
     }
 
-    // --- RESTLICHE LOGIK (Filter, DB, API) ---
     function toggleMovieFilters() { document.getElementById('movieFiltersSection').classList.toggle('show'); }
     function toggleSnackEditor() { document.getElementById('snackEditorSection').classList.toggle('show'); }
 
