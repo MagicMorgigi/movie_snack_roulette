@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v32</title>
+    <title>Movie & Snack Roulette v33</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -49,13 +49,10 @@
         /* --- 2. CINEMA MARQUEE --- */
         .marquee-wrapper {
             margin-top: 40px;
-            /* UPDATE v32: Mehr Abstand nach unten zum Charakter-Bereich */
             margin-bottom: 35px; 
             perspective: 800px; z-index: 100;
             width: 100%; max-width: 850px;
             display: flex; justify-content: center;
-            
-            /* Transition für die Fahrt */
             transform: translateY(0) scale(1); 
             transition: transform 2.5s cubic-bezier(0.25, 1, 0.5, 1);
             will-change: transform;
@@ -92,7 +89,7 @@
 
         /* --- 3. CHARACTER SELECTION --- */
         #characterSelection {
-            display: none; /* Erst versteckt */
+            display: none; 
             flex-direction: column;
             align-items: center;
             width: 100%;
@@ -100,13 +97,11 @@
             margin-top: 10px;
         }
         
-        /* Basis-Status für Animationselemente (versteckt) */
         .char-element {
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
-        /* Wenn sichtbar */
         .char-element.visible {
             opacity: 1;
             transform: translateY(0);
@@ -117,7 +112,6 @@
             width: auto;
             filter: drop-shadow(0 0 15px rgba(255,204,0,0.2));
             animation: floatChar 4s ease-in-out infinite;
-            /* UPDATE v32: Mehr Abstand nach unten zur Sprechblase */
             margin-bottom: 30px;
         }
         
@@ -142,13 +136,12 @@
             display: flex; flex-direction: column; gap: 10px; width: 100%;
         }
 
-        /* Kleinere Buttons */
         .intro-choice-btn {
             background: linear-gradient(135deg, #333, #444);
             border: 1px solid #555;
             color: white;
-            padding: 14px; /* Kleineres Padding */
-            font-size: 1rem; /* Kleinere Schrift */
+            padding: 14px; 
+            font-size: 1rem; 
             border-radius: 8px;
             cursor: pointer;
             transition: transform 0.2s, background 0.2s, border-color 0.2s;
@@ -239,10 +232,33 @@
         .provider-icon { width: 35px; height: 35px; border-radius: 6px; }
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; background: black; width: 100%; }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
         .snack-content { text-align: center; padding: 40px 20px; }
-        .snack-dynamic-header { font-weight: 300; margin-bottom: 20px; display: block; }
+        
+        /* UPDATE v33: Design Anpassung - Dezent & Einheitlich */
+        .snack-dynamic-header {
+            font-weight: 300;
+            margin-bottom: 20px;
+            display: block;
+            color: #ccc; /* Immer grau */
+            font-size: 1.1rem; /* Immer 1.1rem */
+            /* Standard Schriftart erzwingen (kein Limelight hier) */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
         .snack-visual-row { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px; }
         .snack-emoji { font-size: 5rem; display: block; animation: float 3s ease-in-out infinite; white-space: nowrap; }
+        
+        /* UPDATE v33: Design Anpassung - Edler Name */
+        #sName {
+            color: var(--gold); /* Gold statt Primary */
+            font-family: 'Limelight', cursive; /* Edle Schriftart */
+            font-size: 1.6rem; /* Etwas größer als Header */
+            font-weight: normal; 
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
         @media (max-width: 600px) {
@@ -393,7 +409,7 @@
                         <span id="sEmoji" class="snack-emoji">🍿</span>
                         <button class="cover-nav-btn" id="btnSNext" onclick="navigate('snack', 1)">❯</button>
                     </div>
-                    <h2 id="sName" style="color: var(--primary);">Snack Name</h2>
+                    <h2 id="sName">Snack Name</h2>
                     <p id="sDesc" class="desc">Beschreibung</p>
                 </div>
             </div>
@@ -674,8 +690,11 @@
     function renderSnack(i) {
         document.getElementById('snackCard').style.display='flex'; 
         const m=document.getElementById('appMode').value; const h=document.getElementById('snackDynamicHeader');
-        if(m==='both'){ h.innerText="Wie wär's dazu mit..."; h.style.color='#ccc'; h.style.fontSize='1.2rem'; } else { h.innerText="Snack-Time! 🤤🥳"; h.style.color='var(--primary)'; h.style.fontSize='1.8rem'; h.style.fontWeight='bold'; }
-        document.getElementById('sName').innerText=i.name; document.getElementById('sEmoji').innerText=i.icon; 
+        if(m==='both'){ h.innerText="Wie wär's dazu mit..."; h.style.color='#ccc'; h.style.fontSize='1.1rem'; h.style.fontFamily='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'; h.style.fontWeight='300'; } 
+        else { h.innerText="Snack-Time! 🤤🥳"; h.style.color='#ccc'; h.style.fontSize='1.1rem'; h.style.fontFamily='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'; h.style.fontWeight='300'; }
+        
+        document.getElementById('sName').innerText=i.name; 
+        document.getElementById('sEmoji').innerText=i.icon; 
         
         const dEl = document.getElementById('sDesc');
         if(i.desc) {
