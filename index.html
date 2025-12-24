@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v27</title>
+    <title>Movie & Snack Roulette v28</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -21,9 +21,9 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
+            /* Transition Zeit wird nun per JS gesetzt, default fallback: */
             transition: opacity 1.5s ease-in-out, visibility 1.5s;
             cursor: pointer;
-            /* Kein Flackern beim Laden: */
             -webkit-tap-highlight-color: transparent; 
         }
         #loadingOverlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -36,7 +36,6 @@
         .loading-gif.loaded { opacity: 1; }
         .loading-gif:hover { transform: scale(1.02); } 
 
-        /* Der Hinweis-Text */
         .click-hint {
             margin-top: 25px;
             color: #888;
@@ -44,20 +43,10 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: bold;
-            
-            /* Startzustand: Komplett unsichtbar */
-            opacity: 0;
-            visibility: hidden; 
-            
-            /* Sanftes Einblenden */
+            opacity: 0; visibility: hidden; 
             transition: opacity 1.5s ease-in-out;
         }
-        
-        /* Zustand: Sichtbar */
-        .click-hint.visible { 
-            opacity: 1; 
-            visibility: visible;
-        }
+        .click-hint.visible { opacity: 1; visibility: visible; }
 
         /* --- 2. CINEMA MARQUEE --- */
         .marquee-wrapper {
@@ -66,6 +55,7 @@
             width: 100%; max-width: 850px;
             display: flex; justify-content: center;
             transform: translateY(0) scale(1); 
+            /* Transition Zeit wird per JS überschrieben (TIMING.MOVE_TIME) */
             transition: transform 2.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
         .marquee-wrapper.in-center { transform: translateY(40vh) scale(1.1); }
@@ -283,16 +273,12 @@
                         <label style="color:var(--primary); margin-bottom:10px;">Neuen Snack hinzufügen</label>
                         <div class="add-snack-form">
                             <input type="text" id="newSnackName" placeholder="Name">
-                            
                             <select id="newSnackType">
                                 <option value="salty">Salzig</option>
                                 <option value="sweet">Süß</option>
                             </select>
-
                             <input type="text" id="newSnackEmoji" placeholder="Emoji (opt.)">
-                            
                             <input type="text" id="newSnackDesc" placeholder="Beschreibung (opt.)">
-                            
                             <button class="btn-small-add" onclick="addCustomSnack()">+</button>
                         </div>
                         <div id="snackListDisplay" class="snack-list"></div>
@@ -346,9 +332,16 @@
 </div>
 
 <script>
-    const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: API KEY EINFÜGEN!
+    const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- API KEY EINFÜGEN
 
-    const HINT_DELAY = 4000;     
+    // *** TIMING KONFIGURATION (in Millisekunden) ***
+    const TIMING = {
+        GIF_FADE_OUT: 0,   // Zeit für GIF Ausblenden
+        HINT_DELAY: 5000,     // Zeit bis "Klicke auf..." erscheint
+        DARK_PAUSE: 200,      // Zeit im Dunkeln nach Klick
+        FLICKER_TIME: 2000,   // Dauer des Flackerns
+        MOVE_TIME: 2000       // Dauer der Fahrt nach oben
+    };
 
     const introGifs = [];
     for (let i = 1; i <= 28; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
@@ -393,6 +386,10 @@
 
     window.onload = async () => {
         window.scrollTo(0,0);
+        // CSS Transition Zeit setzen
+        document.getElementById('mainMarquee').style.transitionDuration = `${TIMING.MOVE_TIME}ms`;
+        document.getElementById('loadingOverlay').style.transitionDuration = `${TIMING.GIF_FADE_OUT}ms`;
+        
         loadSnacksFromStorage();
         startIntroSequence();
         populateYearPicker();
@@ -403,21 +400,31 @@
 
     function dismissIntro() {
         if(introDone) return;
+        
         clearTimeout(hintTimer);
-        document.getElementById('loadingOverlay').classList.add('hidden');
+        const overlay = document.getElementById('loadingOverlay');
+        const sign = document.getElementById('cinemaSign');
+        const marquee = document.getElementById('mainMarquee');
+        const mainContent = document.getElementById('mainContent');
+
+        overlay.classList.add('hidden');
+        
         setTimeout(() => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-            const sign = document.getElementById('cinemaSign');
+            overlay.style.display = 'none';
             sign.classList.add('visible');
             setTimeout(() => {
                 sign.classList.add('flicker-start');
                 setTimeout(() => {
-                    sign.classList.remove('flicker-start'); sign.classList.add('stable-on');
-                    document.getElementById('mainMarquee').classList.remove('in-center');
-                    setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
-                }, 2800);
-            }, 500);
-        }, 1500); 
+                    sign.classList.remove('flicker-start'); 
+                    sign.classList.add('stable-on');
+                    marquee.classList.remove('in-center');
+                    setTimeout(() => { 
+                        mainContent.classList.add('fade-in'); 
+                        introDone = true; 
+                    }, TIMING.MOVE_TIME);
+                }, TIMING.FLICKER_TIME);
+            }, 500); // Kurze Pause vor Flackern
+        }, TIMING.GIF_FADE_OUT + TIMING.DARK_PAUSE);
     }
 
     function forceStartApp() {
@@ -442,9 +449,10 @@
         
         hintTimer = setTimeout(() => {
             document.getElementById('clickHint').classList.add('visible');
-        }, HINT_DELAY);
+        }, TIMING.HINT_DELAY);
     }
 
+    // --- RESTLICHE LOGIK (Filter, DB, API) ---
     function toggleMovieFilters() { document.getElementById('movieFiltersSection').classList.toggle('show'); }
     function toggleSnackEditor() { document.getElementById('snackEditorSection').classList.toggle('show'); }
 
