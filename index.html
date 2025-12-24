@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v25</title>
+    <title>Movie & Snack Roulette v26</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -21,11 +21,32 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 2s ease-in-out, visibility 2s;
+            transition: opacity 1.5s ease-in-out, visibility 1.5s;
+            cursor: pointer; /* Zeigt an, dass man klicken kann */
         }
-        #loadingOverlay.hidden { opacity: 0; visibility: hidden; }
-        .loading-gif { max-width: 80%; max-height: 50vh; border-radius: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.8); opacity: 0; transition: opacity 0.5s; }
+        #loadingOverlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        
+        .loading-gif { 
+            max-width: 80%; max-height: 50vh; 
+            border-radius: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.8); 
+            opacity: 0; transition: opacity 0.5s, transform 0.2s; 
+        }
         .loading-gif.loaded { opacity: 1; }
+        .loading-gif:hover { transform: scale(1.02); } /* Leichter Zoom beim Hover */
+
+        /* Der Hinweis-Text */
+        .click-hint {
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+        .click-hint.visible { opacity: 1; animation: pulseText 2s infinite; }
+        
+        @keyframes pulseText { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
         /* --- 2. CINEMA MARQUEE --- */
         .marquee-wrapper {
@@ -114,14 +135,7 @@
         .snack-info { display: flex; align-items: center; gap: 10px; }
         
         .add-snack-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
-        
-        /* Gleich große Felder (Name, Typ, Emoji, Desc) */
-        .add-snack-form input[type="text"], 
-        .add-snack-form select { 
-            flex: 1 1 0; 
-            padding: 8px; font-size: 0.9rem; 
-            min-width: 100px; 
-        }
+        .add-snack-form input[type="text"], .add-snack-form select { flex: 1 1 0; padding: 8px; font-size: 0.9rem; min-width: 100px; }
         
         .btn-small-add { background: #333; color: white; border: 1px solid #555; padding: 0 15px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 0 0 40px; }
         .btn-small-add:hover { background: var(--primary); border-color: var(--primary); }
@@ -165,7 +179,6 @@
             .provider-section { text-align: left; }
             .cinema-sign h1 { font-size: 1.5rem; }
             .marquee-wrapper.in-center { transform: translateY(35vh) scale(1.1); }
-            /* Auf Handy stacken die Snack Inputs */
             .add-snack-form { flex-direction: column; }
             .add-snack-form input, .add-snack-form select { flex: 1 1 auto; }
         }
@@ -176,8 +189,9 @@
 </head>
 <body>
 
-<div id="loadingOverlay">
+<div id="loadingOverlay" onclick="dismissIntro()">
     <img id="introGif" src="" alt="Loading..." class="loading-gif">
+    <div id="clickHint" class="click-hint">Klicke auf das GIF</div>
 </div>
 
 <div class="wrapper">
@@ -258,16 +272,12 @@
                         <label style="color:var(--primary); margin-bottom:10px;">Neuen Snack hinzufügen</label>
                         <div class="add-snack-form">
                             <input type="text" id="newSnackName" placeholder="Name">
-                            
                             <select id="newSnackType">
                                 <option value="salty">Salzig</option>
                                 <option value="sweet">Süß</option>
                             </select>
-
                             <input type="text" id="newSnackEmoji" placeholder="Emoji (opt.)">
-                            
                             <input type="text" id="newSnackDesc" placeholder="Beschreibung (opt.)">
-                            
                             <button class="btn-small-add" onclick="addCustomSnack()">+</button>
                         </div>
                         <div id="snackListDisplay" class="snack-list"></div>
@@ -321,15 +331,14 @@
 </div>
 
 <script>
-    const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: HIER API KEY EINFÜGEN!
+    const API_KEY = 'e8c5518823a55382429cd9a7f3ab1e1a'; // <-- WICHTIG: API KEY EINFÜGEN!
 
-    const GIF_DURATION = 5000;         
-    const PAUSE_DARK_SCREEN = 0;     
+    // ZEIT IN MILLISEKUNDEN, bis der Hinweis erscheint
+    const HINT_DELAY = 4000;     
 
     const introGifs = [];
     for (let i = 1; i <= 28; i++) { introGifs.push(`./gifs/intro${i}.gif`); }
 
-    // --- NEUE STANDARD LISTE NACH USER WUNSCH ---
     const defaultSnacks = [
         { name: "Edamame", type: "salty", icon: "🫛" },
         { name: "Ofengemüse", type: "salty", icon: "🥦" },
@@ -363,6 +372,7 @@
 
     let snackDB = [];
     let selectedMediaTypes = ['movie']; 
+    let hintTimer;
 
     const state = { media: { history: [], index: -1 }, snack: { history: [], index: -1 }, genres: { movie: [], tv: [] }, selectedGenres: [] };
     let introDone = false;
@@ -377,7 +387,59 @@
         updateUI();
     };
 
-    // --- FILTER & UI LOGIK ---
+    // --- MANUELLE ÜBERGABE VOM INTRO ---
+    function dismissIntro() {
+        if(introDone) return;
+        
+        // Timer stoppen, falls User schneller klickt als Hinweis erscheint
+        clearTimeout(hintTimer);
+
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        
+        // Starte die Transition der Website
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            const sign = document.getElementById('cinemaSign');
+            sign.classList.add('visible');
+            setTimeout(() => {
+                sign.classList.add('flicker-start');
+                setTimeout(() => {
+                    sign.classList.remove('flicker-start'); sign.classList.add('stable-on');
+                    document.getElementById('mainMarquee').classList.remove('in-center');
+                    setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
+                }, 2800);
+            }, 500);
+        }, 0); // Overlay Fade Out Zeit
+    }
+
+    function forceStartApp() {
+        // Fallback falls GIF fehlschlägt
+        if(introDone) return;
+        clearTimeout(hintTimer);
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('mainMarquee').classList.remove('in-center');
+        const sign = document.getElementById('cinemaSign');
+        sign.classList.add('visible'); sign.classList.add('stable-on');
+        document.getElementById('mainContent').classList.add('fade-in');
+        introDone = true;
+    }
+
+    function startIntroSequence() {
+        if(introDone) return;
+        const img = document.getElementById('introGif');
+        if (introGifs.length > 0) { 
+            img.src = introGifs[Math.floor(Math.random() * introGifs.length)];
+            img.onload = () => { img.classList.add('loaded'); };
+            img.onerror = () => { console.log("GIF Error"); forceStartApp(); };
+        } else { forceStartApp(); return; }
+        
+        // HIER: Timer starten, der den Text anzeigt
+        hintTimer = setTimeout(() => {
+            document.getElementById('clickHint').classList.add('visible');
+        }, HINT_DELAY);
+    }
+
+    // --- RESTLICHE LOGIK (Filter, DB, API) ---
     function toggleMovieFilters() { document.getElementById('movieFiltersSection').classList.toggle('show'); }
     function toggleSnackEditor() { document.getElementById('snackEditorSection').classList.toggle('show'); }
 
@@ -390,7 +452,6 @@
 
     function toggleSnackType(el) { el.classList.toggle('active'); }
 
-    // --- DB LOGIC ---
     function loadSnacksFromStorage() {
         const stored = localStorage.getItem('mySnacks');
         snackDB = stored ? JSON.parse(stored) : [...defaultSnacks];
@@ -411,7 +472,6 @@
         snackDB.push({ name: name, type: type, icon: emoji, desc: desc }); 
         saveSnacksToStorage();
         
-        // Felder resetten
         document.getElementById('newSnackName').value = '';
         document.getElementById('newSnackEmoji').value = '';
         document.getElementById('newSnackDesc').value = '';
@@ -425,44 +485,6 @@
             div.innerHTML = `<div class="snack-info"><span>${item.icon}</span><span>${item.name} <small style="color:#777">(${item.type})</small></span></div><button class="delete-btn" onclick="deleteSnack(${index})">🗑</button>`;
             list.appendChild(div);
         });
-    }
-
-    // --- INTRO ---
-    function forceStartApp() {
-        if(introDone) return;
-        document.getElementById('loadingOverlay').style.display = 'none';
-        document.getElementById('mainMarquee').classList.remove('in-center');
-        const sign = document.getElementById('cinemaSign');
-        sign.classList.add('visible'); sign.classList.add('stable-on');
-        document.getElementById('mainContent').classList.add('fade-in');
-        introDone = true;
-    }
-    function startIntroSequence() {
-        if(introDone) return;
-        const img = document.getElementById('introGif');
-        if (introGifs.length > 0) { 
-            img.src = introGifs[Math.floor(Math.random() * introGifs.length)];
-            img.onload = () => { img.classList.add('loaded'); };
-            img.onerror = () => { console.log("GIF Error"); forceStartApp(); };
-        } else { forceStartApp(); return; }
-        
-        setTimeout(() => {
-            if(introDone) return;
-            document.getElementById('loadingOverlay').classList.add('hidden');
-            setTimeout(() => {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                const sign = document.getElementById('cinemaSign');
-                sign.classList.add('visible');
-                setTimeout(() => {
-                    sign.classList.add('flicker-start');
-                    setTimeout(() => {
-                        sign.classList.remove('flicker-start'); sign.classList.add('stable-on');
-                        document.getElementById('mainMarquee').classList.remove('in-center');
-                        setTimeout(() => { document.getElementById('mainContent').classList.add('fade-in'); introDone = true; }, 2000);
-                    }, 2800);
-                }, 500);
-            }, 200 + PAUSE_DARK_SCREEN);
-        }, GIF_DURATION);
     }
 
     function updateUI() {
