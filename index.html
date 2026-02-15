@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v33</title>
+    <title>Movie & Snack Roulette v34</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -235,25 +235,22 @@
         
         .snack-content { text-align: center; padding: 40px 20px; }
         
-        /* UPDATE v33: Design Anpassung - Dezent & Einheitlich */
         .snack-dynamic-header {
             font-weight: 300;
             margin-bottom: 20px;
             display: block;
-            color: #ccc; /* Immer grau */
-            font-size: 1.1rem; /* Immer 1.1rem */
-            /* Standard Schriftart erzwingen (kein Limelight hier) */
+            color: #ccc; 
+            font-size: 1.1rem; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         .snack-visual-row { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px; }
         .snack-emoji { font-size: 5rem; display: block; animation: float 3s ease-in-out infinite; white-space: nowrap; }
         
-        /* UPDATE v33: Design Anpassung - Edler Name */
         #sName {
-            color: var(--gold); /* Gold statt Primary */
-            font-family: 'Limelight', cursive; /* Edle Schriftart */
-            font-size: 1.6rem; /* Etwas größer als Header */
+            color: var(--gold); 
+            font-family: 'Limelight', cursive; 
+            font-size: 1.6rem; 
             font-weight: normal; 
             letter-spacing: 1px;
             margin-top: 10px;
@@ -425,13 +422,12 @@
         GIF_FADE_OUT: 0,   
         HINT_DELAY: 4000,     
         DARK_PAUSE: 250,      
-        FLICKER_TIME: 2500,   
-        MOVE_TIME: 1500,
+        FLICKER_TIME: 2000,   
+        MOVE_TIME: 1000,
         
-        // NEUE ZEITEN FÜR SEQUENZIELLES EINBLENDEN
-        CHAR_APPEAR: 500,     // Wann Bild kommt (nachdem Schild oben ist)
-        TEXT_APPEAR: 2000,    // Wann Text kommt
-        BTNS_APPEAR: 4000     // Wann Buttons kommen
+        CHAR_APPEAR: 500,     
+        TEXT_APPEAR: 2000,    
+        BTNS_APPEAR: 3500     
     };
 
     // --- CHARACTERS ---
@@ -481,7 +477,6 @@
         const marquee = document.getElementById('mainMarquee');
         const charSection = document.getElementById('characterSelection');
         
-        // Overlay ausblenden
         overlay.classList.add('hidden');
         
         setTimeout(() => {
@@ -493,29 +488,22 @@
                     sign.classList.remove('flicker-start'); 
                     sign.classList.add('stable-on');
                     
-                    // START: Schild fährt hoch
                     marquee.classList.remove('in-center');
                     
-                    // Warten bis Schild oben ist (MOVE_TIME), dann Sequenz starten
                     setTimeout(() => { 
-                        // Zufallscharakter wählen
                         const randomChar = characters[Math.floor(Math.random() * characters.length)];
                         document.getElementById('charImg').src = randomChar;
                         
-                        // Container sichtbar schalten (Inhalte sind noch unsichtbar durch CSS)
                         charSection.style.display = 'flex';
                         
-                        // 1. Bild zeigen
                         setTimeout(() => {
                             document.getElementById('charImg').classList.add('visible');
                         }, TIMING.CHAR_APPEAR);
 
-                        // 2. Text zeigen
                         setTimeout(() => {
                             document.querySelector('.char-dialog-box').classList.add('visible');
                         }, TIMING.TEXT_APPEAR);
 
-                        // 3. Buttons zeigen
                         setTimeout(() => {
                             document.querySelector('.selection-btn-container').classList.add('visible');
                             introDone = true; 
@@ -539,7 +527,6 @@
         
         const charSection = document.getElementById('characterSelection');
         charSection.style.display = 'flex';
-        // Alles sofort sichtbar machen
         charSection.querySelectorAll('.char-element').forEach(el => el.classList.add('visible'));
         introDone = true;
     }
@@ -648,8 +635,11 @@
         const type = selectedMediaTypes[Math.floor(Math.random() * selectedMediaTypes.length)];
         const mr=document.getElementById('minRating').value; const mv=document.getElementById('minVotes').value; const mrt=document.getElementById('maxRuntime').value; const my=document.getElementById('minYearSelect').value; const cc=document.getElementById('countrySelect').value; const cn=document.getElementById('countrySelect').options[document.getElementById('countrySelect').selectedIndex].getAttribute('data-name');
         
+        // HIER WURDE .join(',') DURCH .join('|') ERSETZT FÜR OR-LOGIK
         let u=`https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&language=de-DE&sort_by=popularity.desc&vote_average.gte=${mr}&vote_count.gte=${mv}&watch_region=${cc}`;
-        if(state.selectedGenres.length>0) u+=`&with_genres=${state.selectedGenres.join(',')}`; if(mrt<240) u+=`&with_runtime.lte=${mrt}`; 
+        if(state.selectedGenres.length>0) u+=`&with_genres=${state.selectedGenres.join('|')}`; 
+        
+        if(mrt<240) u+=`&with_runtime.lte=${mrt}`; 
         if(my) { const d=type==='movie'?'primary_release_date.gte':'first_air_date.gte'; u+=`&${d}=${my}-01-01`; }
         
         const cr=await fetch(u); const cd=await cr.json(); if(!cd.results||cd.total_results===0){alert("Nichts gefunden!");return;}
