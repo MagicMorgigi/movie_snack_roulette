@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie & Snack Roulette v35</title>
+    <title>Movie & Snack Roulette v36</title>
     <link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
     
     <style>
@@ -173,9 +173,18 @@
         .row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; align-items: flex-end; }
         .full-width { width: 100%; flex: 1 1 100%; }
         .slider-row { margin-bottom: 25px; display: block; width: 100%; }
+        
         label { font-size: 0.9rem; color: #ccc; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 600; }
-        .val-display-large { color: var(--primary); font-weight: bold; font-size: 1.3rem; }
         .val-display { color: var(--primary); font-weight: bold; }
+        
+        /* UPDATE v36: Zentriertes Rating */
+        .rating-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; }
+        .rating-header .r-title { font-size: 0.95rem; color: #ccc; font-weight: 600; margin-bottom: 5px; }
+        .rating-header .r-val { font-size: 1.8rem; color: var(--primary); font-weight: bold; }
+        
+        /* UPDATE v36: Mehrzeiliger Info Text */
+        .max-rating-info { font-size: 0.8rem; color: #888; text-align: center; margin-top: 10px; font-weight: 400; line-height: 1.4; }
+
         select, input[type="number"], input[type="text"] { background: var(--bg-input); color: white; border: 1px solid #444; padding: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 1rem; appearance: none; }
         input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; cursor: pointer; margin: 5px 0; }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #444; border-radius: 5px; }
@@ -184,18 +193,8 @@
         .toggle-btn { background: transparent; border: 1px solid #555; color: #aaa; padding: 10px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 0.85rem; margin-top: 10px; transition: 0.2s; text-align: center; }
         .toggle-btn:hover { background: #333; color: white; border-color: #888; }
         
-        /* UPDATE v35: Style für den Reset-Button der Genres */
-        .reset-genres-btn {
-            background: transparent; border: 1px solid #555; color: #aaa;
-            padding: 4px 10px; border-radius: 4px; font-size: 0.75rem;
-            cursor: pointer; transition: 0.2s; font-weight: normal;
-        }
+        .reset-genres-btn { background: transparent; border: 1px solid #555; color: #aaa; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; font-weight: normal; }
         .reset-genres-btn:hover { background: #444; color: white; border-color: #888; }
-
-        /* UPDATE v35: Style für den Rating Hinweis */
-        .max-rating-info {
-            font-size: 0.8rem; color: #888; text-align: center; margin-top: 8px; font-weight: 400;
-        }
 
         .btn-gen { background: linear-gradient(135deg, #e50914, #b20710); color: white; border: none; padding: 18px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4); margin-top: 25px; transition: transform 0.2s; }
         .btn-gen:active { transform: scale(0.98); }
@@ -247,19 +246,10 @@
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         
         .snack-content { text-align: center; padding: 40px 20px; }
-        
-        .snack-dynamic-header {
-            font-weight: 300; margin-bottom: 20px; display: block; color: #ccc; 
-            font-size: 1.1rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
+        .snack-dynamic-header { font-weight: 300; margin-bottom: 20px; display: block; color: #ccc; font-size: 1.1rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .snack-visual-row { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px; }
         .snack-emoji { font-size: 5rem; display: block; animation: float 3s ease-in-out infinite; white-space: nowrap; }
-        
-        #sName {
-            color: var(--gold); font-family: 'Limelight', cursive; font-size: 1.6rem; 
-            font-weight: normal; letter-spacing: 1px; margin-top: 10px;
-        }
+        #sName { color: var(--gold); font-family: 'Limelight', cursive; font-size: 1.6rem; font-weight: normal; letter-spacing: 1px; margin-top: 10px; }
 
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
@@ -341,7 +331,10 @@
                 </div>
                 
                 <div class="slider-row">
-                    <label>Min. Ø-Bewertung [0 - 10]: <span id="ratingVal" class="val-display-large">7.0</span></label>
+                    <div class="rating-header">
+                        <span class="r-title">Min. Ø-Bewertung [0 - 10]</span>
+                        <span id="ratingVal" class="r-val">7.0</span>
+                    </div>
                     <input type="range" id="minRating" min="0" max="10.0" step="0.1" value="7.0" oninput="document.getElementById('ratingVal').innerText = parseFloat(this.value).toFixed(1)">
                     <div id="maxRatingInfo" class="max-rating-info">Lade maximale Bewertungen...</div>
                 </div>
@@ -443,7 +436,7 @@
     const TIMING = {
         GIF_FADE_OUT: 0,   
         HINT_DELAY: 4000,     
-        DARK_PAUSE: 500,      
+        DARK_PAUSE: 250,      
         FLICKER_TIME: 2000,   
         MOVE_TIME: 1000,
         CHAR_APPEAR: 500,     
@@ -477,7 +470,6 @@
         startIntroSequence();
         populateYearPicker();
         
-        // UPDATE v35: Lade initiale Max Ratings asynchron im Hintergrund
         fetchMaxRatings();
 
         await loadCountries();
@@ -485,20 +477,18 @@
         updateUI();
     };
 
-    // --- UPDATE v35: MAX RATING FETCH LOGIK ---
+    // UPDATE v36: HTML Struktur umgebaut für Zeilenumbruch
     async function fetchMaxRatings() {
         const minV = document.getElementById('minVotes').value;
         const infoEl = document.getElementById('maxRatingInfo');
         
-        // Prüfe ob API-Key noch Platzhalter ist
         if(API_KEY === 'DEIN_TMDB_API_KEY_HIER') {
-            infoEl.innerText = `Max. Bewertung Film: ? | Max. Bewertung Serie: ? (API Key fehlt)`;
+            infoEl.innerHTML = `Max. Bewertung Film: ? | Max. Bewertung Serie: ?<br>(API Key fehlt)`;
             return;
         }
         
-        infoEl.innerText = "Aktualisiere max. Bewertungen...";
+        infoEl.innerHTML = "Aktualisiere max. Bewertungen...<br>&nbsp;";
         try {
-            // Hole jeweils das oberste Ergebnis sortiert nach Bewertung abwärts
             const [mRes, tRes] = await Promise.all([
                 fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=de-DE&sort_by=vote_average.desc&vote_count.gte=${minV}`),
                 fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&language=de-DE&sort_by=vote_average.desc&vote_count.gte=${minV}`)
@@ -510,9 +500,9 @@
             const maxM = mData.results && mData.results.length > 0 ? mData.results[0].vote_average.toFixed(1) : "-";
             const maxT = tData.results && tData.results.length > 0 ? tData.results[0].vote_average.toFixed(1) : "-";
             
-            infoEl.innerText = `Max. Bewertung Film: ${maxM} | Max. Bewertung Serie: ${maxT} (min. ${minV} Bewertungen)`;
+            infoEl.innerHTML = `Max. Bewertung Film: ${maxM} | Max. Bewertung Serie: ${maxT}<br>(bei min. ${minV} Bewertungen)`;
         } catch(e) {
-            infoEl.innerText = `Max. Bewertung Film: ? | Max. Bewertung Serie: ? (Fehler beim Laden)`;
+            infoEl.innerHTML = `Max. Bewertung Film: ? | Max. Bewertung Serie: ?<br>(Fehler beim Laden)`;
         }
     }
 
@@ -612,7 +602,6 @@
 
     function toggleSnackType(el) { el.classList.toggle('active'); }
 
-    // --- UPDATE v35: GENRE RESET FUNKTION ---
     function resetGenres() {
         state.selectedGenres = [];
         document.querySelectorAll('#genreBox .chip').forEach(c => c.classList.remove('active'));
